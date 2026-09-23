@@ -187,5 +187,5 @@ else:
         target_arch=None,
         codesign_identity=None,
         entitlements_file=None,
-        icon=['minking_desktop/ui/favicon.ico'],
+        icon='minking_desktop/ui/favicon.ico',
     )
