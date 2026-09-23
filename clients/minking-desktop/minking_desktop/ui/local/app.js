@@ -46,18 +46,40 @@ function pricingCells(pricing, kind) {
   const sellText = sell.input_usd_per_1m ? `输入 $${sell.input_usd_per_1m} · 输出 $${sell.output_usd_per_1m || '—'}` : '—';
   return [rate, officialText, sellText];
 }
+function priceLine(pricing, kind) {
+  const [rate, official, sell] = pricingCells(pricing, kind);
+  return [
+    rate && rate !== '—' ? `倍率 ${rate}` : '',
+    official && official !== '—' ? `官方 ${official}` : '',
+    sell && sell !== '—' ? `售价 ${sell}` : '',
+  ].filter(Boolean);
+}
 function renderModels() {
-  const query=$('search').value.toLowerCase();const rows=state.accounts.flatMap(a=>a.models.map(m=>({...m,name:a.name}))).filter(m=>(m.id+m.name).toLowerCase().includes(query)&&(modelFilter==='all'||modelKind(m)===modelFilter));
-  const head=$('models').querySelector('thead tr');
-  if(cloudMode) head.innerHTML='<th>模型 ID</th><th>来源平台</th><th>倍率</th><th>官方定价</th><th>售价</th><th>操作</th>';
-  $('model-rows').replaceChildren();
+  const query=$('search').value.toLowerCase();
+  const rows=state.accounts.flatMap(a=>a.models.map(m=>({...m,name:a.name}))).filter(m=>(m.id+m.name).toLowerCase().includes(query)&&(modelFilter==='all'||modelKind(m)===modelFilter));
+  const grid=$('model-grid');
+  grid.replaceChildren();
   document.dispatchEvent(new Event('modelsupdated'));
+  const kindLabel={text:'文本',image:'图片',video:'视频'};
   for(const m of rows){
-    const tr=element('tr');
     const kind=modelKind(m);
-    const texts=cloudMode?[m.id,m.name,...pricingCells(m.pricing,kind)]:[m.id,m.name,sources[m.source]||m.source,availability[m.availability]||m.availability];
-    for(const text of texts)tr.append(element('td',text));
-    const cell=element('td');const button=element('button','调用');button.addEventListener('click',()=>{setMode(kind);$('test-model').value=m.id;snippet();showView('playground');});cell.append(button);tr.append(cell);$('model-rows').append(tr);
+    const card=element('article',undefined,'model-card');
+    card.append(element('p',m.name,'model-card-platform'));
+    card.append(element('h3',m.id));
+    const meta=element('p',undefined,'model-card-meta');
+    meta.append(element('span',kindLabel[kind]||kind,'model-pill'));
+    if(cloudMode){
+      for(const text of priceLine(m.pricing,kind)) meta.append(element('span',text,'model-pill'));
+    }else{
+      meta.append(element('span',sources[m.source]||m.source||'','model-pill'));
+      meta.append(element('span',availability[m.availability]||m.availability||'','model-pill'));
+    }
+    card.append(meta);
+    const button=element('button','用这个模型调用','secondary');
+    button.type='button';
+    button.addEventListener('click',()=>{setMode(kind);$('test-model').value=m.id;snippet();showView('playground');});
+    card.append(button);
+    grid.append(card);
   }
   $('model-empty').hidden=rows.length>0;
 }

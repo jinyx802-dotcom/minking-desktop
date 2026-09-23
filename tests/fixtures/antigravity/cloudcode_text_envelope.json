@@ -1,0 +1,27 @@
+{
+  "project": "example-cloud-project",
+  "model": "gemini-3.8-flash-tiered",
+  "requestType": "agent",
+  "userAgent": "antigravity",
+  "request": {
+    "systemInstruction": {
+      "role": "user",
+      "parts": [
+        {
+          "text": "You are a coding agent. Do not mention hosted image or web search tools."
+        }
+      ]
+    },
+    "contents": [
+      {
+        "role": "user",
+        "parts": [{"text": "Reply with ok only."}]
+      }
+    ],
+    "generationConfig": {
+      "thinkingConfig": {
+        "thinkingLevel": "high"
+      }
+    }
+  }
+}

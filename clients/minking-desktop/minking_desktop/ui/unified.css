@@ -28,7 +28,7 @@ button:focus-visible{outline:3px solid #9bc8ad;outline-offset:3px}
 /* Shared desktop language: match local spacing, surfaces and typography. */
 body{font-size:14px}
 .brand{font-weight:650;letter-spacing:0}
-.brand-mark{border:1px solid var(--line)}
+.brand-mark{border-radius:10px;background:#05070d;border:1px solid #1a2233}
 .top-actions .ghost{border-radius:7px;font-weight:500}
 .sidebar{gap:16px}
 .sidebar-label{font-weight:500;letter-spacing:2px;margin:4px 12px 0;font-size:11px}

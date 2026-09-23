@@ -29,8 +29,50 @@ _ACCOUNT_FEATURE_PATHS = {
 }
 
 
+_CODE_TEXT = {
+    "invalid_captcha": "图片验证码已过期或不正确，请换一张再试",
+    "captcha_rate_limited": "图片验证码请求过于频繁，请稍后再试",
+    "mail_rate_limited": "发送太频繁，请稍后再试",
+    "mail_unavailable": "验证邮件暂时发不出去，请稍后再试",
+    "invalid_email": "邮箱地址不正确",
+    "invalid_email_code": "邮箱验证码不正确或已过期",
+    "portal_unavailable": "用户门户未开启",
+    "portal_auth_required": "请先登录",
+    "invalid_csrf_token": "登录状态已失效，请重新登录",
+    "email_not_registered": "该邮箱尚未注册，请先注册",
+    "invalid_name": "注册请填写姓名",
+    "api_key_inactive": "接口密钥未启用",
+    "key_not_recoverable": "接口密钥无法读取，请先在网页重置",
+}
+_PHRASE_TEXT = {
+    "Image code expired or incorrect": "图片验证码已过期或不正确，请换一张再试",
+    "Too many image requests": "图片验证码请求过于频繁，请稍后再试",
+    "Please wait before requesting another code": "发送太频繁，请稍后再试",
+    "Verification email could not be sent": "验证邮件暂时发不出去，请稍后再试",
+    "Invalid email address": "邮箱地址不正确",
+    "Invalid or expired email code": "邮箱验证码不正确或已过期",
+    "User portal is not configured": "用户门户未开启",
+    "Email login required": "请先登录",
+    "Desktop token required": "请先登录",
+    "Invalid CSRF token": "登录状态已失效，请重新登录",
+    "Your API key is unavailable": "接口密钥不可用",
+    "API key is not active": "接口密钥未启用",
+    "API key cannot be recovered; rotate it first": "接口密钥无法读取，请先在网页重置",
+}
+
+
+def localize_error(message: str, code: str = "") -> str:
+    if code in _CODE_TEXT:
+        return _CODE_TEXT[code]
+    text = (message or "").strip()
+    if text in _PHRASE_TEXT:
+        return _PHRASE_TEXT[text]
+    return text or "请求失败"
+
+
 class ApiError(RuntimeError):
     def __init__(self, message: str, *, status: int = 0, code: str = "client_error") -> None:
+        message = localize_error(message, code)
         super().__init__(message)
         self.message = message
         self.status = status

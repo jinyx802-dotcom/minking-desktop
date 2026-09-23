@@ -1,0 +1,41 @@
+{
+  "model": "gemini-3-flash",
+  "stream": true,
+  "instructions": "Use only declared function tools. apply_patch is available.",
+  "tools": [
+    {
+      "type": "function",
+      "name": "apply_patch",
+      "description": "Apply a unified patch to a file",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string"},
+          "patch": {"type": "string"}
+        },
+        "required": ["path", "patch"]
+      }
+    },
+    {"type": "image_generation"},
+    {"type": "web_search"},
+    {"type": "computer_use"}
+  ],
+  "input": [
+    {
+      "type": "message",
+      "role": "user",
+      "content": [{"type": "input_text", "text": "Patch README."}]
+    },
+    {
+      "type": "function_call",
+      "call_id": "call_apply_1",
+      "name": "apply_patch",
+      "arguments": "{\"path\":\"README.md\",\"patch\":\"*** Begin Patch\\n*** End Patch\\n\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_apply_1",
+      "output": "ok"
+    }
+  ]
+}

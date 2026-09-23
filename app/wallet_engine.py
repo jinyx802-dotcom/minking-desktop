@@ -157,7 +157,10 @@ async def settle(request_id: str, usage: dict | None, outcome: str, *, dispatche
             db.execute("UPDATE billing_requests SET state='released',outcome='unverified_platform_cost',updated_at=? WHERE request_id=?", (now,request_id))
             return
         if not quote:
-            state = "pending" if dispatched else "released"
+            # Success can still receive usage later (an async video poll).
+            # A failure has no later usage report. Leaving the full reservation
+            # pending freezes the wallet until expiry, and expiry charges nothing.
+            state = "pending" if dispatched and outcome == "success" else "released"
             db.execute("UPDATE billing_requests SET state=?,outcome=?,updated_at=? WHERE request_id=?",
                        (state,outcome,now,request_id))
             return

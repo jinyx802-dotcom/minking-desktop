@@ -2,7 +2,7 @@
 
 主打三件事：一键配置、会话续连、本地中转。
 
-Windows 托盘程序把本机的 Codex、Grok、WorkBuddy、Claude Code、ZCode 接到 MinKing 云，也可以在本机把已经登录的官方账号转成 OpenAI 兼容接口。当前桌面端 `0.2.17`，网关 `0.8.27`。
+Windows 托盘程序把本机的 Codex、Grok、WorkBuddy、Claude Code、ZCode 接到 MinKing 云，也可以在本机把已经登录的官方账号转成 OpenAI 兼容接口。当前桌面端 `0.2.17`，网关 `0.8.28`。
 
 ## 一键配置
 

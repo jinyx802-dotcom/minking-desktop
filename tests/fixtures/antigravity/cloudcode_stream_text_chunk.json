@@ -1,0 +1,18 @@
+{
+  "response": {
+    "candidates": [
+      {
+        "content": {
+          "role": "model",
+          "parts": [{"text": "ok"}]
+        },
+        "finishReason": "STOP"
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 12,
+      "candidatesTokenCount": 1,
+      "totalTokenCount": 13
+    }
+  }
+}

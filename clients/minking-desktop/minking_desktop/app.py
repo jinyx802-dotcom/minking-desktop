@@ -26,6 +26,7 @@ from minking_desktop.harness import (
     local_codex_catalog_entry,
     packed_codex_catalog,
     planned_sync_files,
+    codex_restore_compare,
     list_restore_versions,
     restore_all,
     restore_available,
@@ -257,9 +258,12 @@ class JsBridge:
                 versions = list_restore_versions(harness_id, profile_root=root)
                 if not versions:
                     return {"ok": False, "error": "还没有可回退的配置版本"}
-                return {"ok": True, "display_name": recipe["display_name"],
+                payload = {"ok": True, "display_name": recipe["display_name"],
                         "files": planned_sync_files(recipe, home=home), "base_url": base,
                         "snapshot_dir": versions[0]["path"], "versions": versions}
+                if harness_id == "codex":
+                    payload["auth_compare"] = codex_restore_compare(home=home, profile_root=root)
+                return payload
             if action == "preview":
                 snap = root / harness_id / "official"
                 return {"ok": True, "display_name": recipe["display_name"],
@@ -785,7 +789,7 @@ class DesktopApp:
         versions = list_restore_versions(harness_id, profile_root=profile_root(appdata=self.appdata))
         if not versions:
             return {"ok": False, "error": "还没有可回退的配置版本。首次接入时会自动保存当前配置。"}
-        return {
+        payload = {
             "ok": True,
             "id": harness_id,
             "display_name": recipe["display_name"],
@@ -794,6 +798,11 @@ class DesktopApp:
             "snapshot_dir": versions[0]["path"],
             "versions": versions,
         }
+        if harness_id == "codex":
+            payload["auth_compare"] = codex_restore_compare(
+                home=self.home, profile_root=profile_root(appdata=self.appdata)
+            )
+        return payload
 
     def open_backup_folder(self, path: str = "") -> dict[str, Any]:
         raw = (path or "").strip()

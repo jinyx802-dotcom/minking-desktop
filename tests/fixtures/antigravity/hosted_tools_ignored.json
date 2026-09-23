@@ -1,0 +1,5 @@
+{
+  "drop_from_tools": ["image_generation", "web_search", "computer_use", "computer_use_preview"],
+  "keep_function_names": ["apply_patch", "exec_command", "shell"],
+  "do_not_promise_in_system": ["image_generation", "web_search", "computer_use"]
+}

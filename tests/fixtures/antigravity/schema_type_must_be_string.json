@@ -1,0 +1,14 @@
+{
+  "invalid_parameters": {
+    "type": ["object", "null"],
+    "properties": {
+      "path": {"type": ["string", "null"]}
+    }
+  },
+  "cleaned_parameters": {
+    "type": "object",
+    "properties": {
+      "path": {"type": "string"}
+    }
+  }
+}

@@ -129,10 +129,10 @@ def _normalize_device(value: str) -> str:
 def _email(value: str) -> str:
     address = value.strip().lower()
     if address.count("@") != 1 or len(address) > 254 or any(c.isspace() for c in address):
-        raise GatewayError(422, "Invalid email address", code="invalid_email")
+        raise GatewayError(422, "邮箱地址不正确", code="invalid_email")
     domain = address.rsplit("@", 1)[1]
     if "." not in domain or domain.startswith(".") or domain.endswith("."):
-        raise GatewayError(422, "Invalid email address", code="invalid_email")
+        raise GatewayError(422, "邮箱地址不正确", code="invalid_email")
     return address
 
 
@@ -169,7 +169,7 @@ async def captcha(request: Request, response: Response) -> dict[str, str]:
         return True
 
     if not await gateway_store.call(save):
-        raise GatewayError(429, "Too many image requests", code="captcha_rate_limited")
+        raise GatewayError(429, "图片验证码请求过于频繁，请稍后再试", code="captcha_rate_limited")
     response.headers["Cache-Control"] = "no-store"
     return {"id": challenge_id, "image": "data:image/png;base64," + base64.b64encode(_captcha_png(answer)).decode()}
 
@@ -232,18 +232,18 @@ async def _issue_code(request: Request, body: MailRequest) -> dict[str, str]:
 
     result = await gateway_store.call(consume)
     if result == "captcha":
-        raise GatewayError(422, "Image code expired or incorrect", code="invalid_captcha")
+        raise GatewayError(422, "图片验证码已过期或不正确，请换一张再试", code="invalid_captcha")
     if result == "unknown_email":
         raise GatewayError(404, "该邮箱尚未注册，请先注册", code="email_not_registered")
     if result == "need_name":
         raise GatewayError(422, "注册请填写姓名", code="invalid_name")
     if result == "rate":
-        raise GatewayError(429, "Please wait before requesting another code", code="mail_rate_limited")
+        raise GatewayError(429, "发送太频繁，请稍后再试", code="mail_rate_limited")
     try:
         await asyncio.to_thread(_send_mail, email, code)
     except Exception as exc:
         await gateway_store.execute("DELETE FROM portal_codes WHERE id=?", (challenge_id,))
-        raise GatewayError(503, "Verification email could not be sent", code="mail_unavailable") from exc
+        raise GatewayError(503, "验证邮件暂时发不出去，请稍后再试", code="mail_unavailable") from exc
     return {"challenge_id": challenge_id, "expires_in": "600"}
 
 
@@ -359,7 +359,7 @@ async def _complete_email_login(
 
     outcome = await gateway_store.call(complete)
     if outcome is None:
-        raise GatewayError(401, "Invalid or expired email code", code="invalid_email_code")
+        raise GatewayError(401, "邮箱验证码不正确或已过期", code="invalid_email_code")
     name, notice = outcome
     return name, email, token, csrf, notice
 
@@ -427,7 +427,7 @@ async def session(request: Request) -> PortalSession:
         (_digest(kind + token), iso_now()),
     ) if token else None
     if not row:
-        raise GatewayError(401, "Email login required", code="portal_auth_required")
+        raise GatewayError(401, "请先登录", code="portal_auth_required")
     return PortalSession(row["user_id"], row["csrf_token"], row["name"], row["email"], token, via)
 
 
@@ -568,7 +568,7 @@ async def download(user: PortalSession = Depends(write_session)) -> Response:
 @router.get("/desktop/bootstrap")
 async def desktop_bootstrap(user: PortalSession = Depends(session)) -> JSONResponse:
     if user.via != "bearer":
-        raise GatewayError(401, "Desktop token required", code="portal_auth_required")
+        raise GatewayError(401, "请先登录", code="portal_auth_required")
     key = await _owned_key(user)
     credit = await gateway_store.one("SELECT usd_credit FROM portal_users WHERE id=?", (user.user_id,))
     try:
@@ -596,7 +596,7 @@ async def desktop_bootstrap(user: PortalSession = Depends(session)) -> JSONRespo
 @router.post("/desktop/key")
 async def desktop_key(user: PortalSession = Depends(write_session)) -> JSONResponse:
     if user.via != "bearer":
-        raise GatewayError(401, "Desktop token required", code="portal_auth_required")
+        raise GatewayError(401, "请先登录", code="portal_auth_required")
     key = await _owned_key(user)
     if key["status"] != "active":
         raise GatewayError(409, "API key is not active", code="api_key_inactive")
@@ -612,7 +612,7 @@ async def desktop_key(user: PortalSession = Depends(write_session)) -> JSONRespo
 @router.post("/desktop/logout")
 async def desktop_logout(user: PortalSession = Depends(write_session)) -> JSONResponse:
     if user.via != "bearer":
-        raise GatewayError(401, "Desktop token required", code="portal_auth_required")
+        raise GatewayError(401, "请先登录", code="portal_auth_required")
     await gateway_store.execute("DELETE FROM portal_sessions WHERE session_hash=?", (_digest("desktop:" + user.raw_token),))
     response = JSONResponse({"ok": True})
     response.headers["Cache-Control"] = "no-store"
@@ -621,7 +621,7 @@ async def desktop_logout(user: PortalSession = Depends(write_session)) -> JSONRe
 
 def _require_desktop(user: PortalSession) -> None:
     if user.via != "bearer":
-        raise GatewayError(401, "Desktop token required", code="portal_auth_required")
+        raise GatewayError(401, "请先登录", code="portal_auth_required")
 
 
 @router.get("/desktop/skills")

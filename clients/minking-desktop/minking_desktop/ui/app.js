@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
 const MODE = { cloud: "云", official: "官方", unknown: "未知" };
 const PAGE_SIZE = 20;
 let challengeId = "";
+const CAPTCHA_REFRESH_MS = 4 * 60 * 1000;
+let captchaLoadedAt = 0;
+let captchaRequest = 0;
+let captchaTimer = 0;
 let booted = false;
 let authMode = "login";
 let currentPane = "dashboard";
@@ -368,9 +372,10 @@ async function loadLedger() {
     }
     const meta = pageMeta(result, ledgerPage, PAGE_SIZE);
     ledgerPage = meta.page;
+    const ledgerKind = { usage: "扣费", grant: "加款", redeem: "卡密", adjust: "调整", reversal: "冲正" };
     renderRows($("ledger-body"), meta.rows, (row) => [
       formatTime(pick(row, ["created_at", "time", "started_at"])),
-      pick(row, ["type", "kind", "action"]) || "—",
+      ledgerKind[pick(row, ["type", "kind", "action"])] || pick(row, ["type", "kind", "action"]) || "—",
       formatMoney(pick(row, ["amount", "delta", "usd"])),
       formatMoney(pick(row, ["balance", "usd_credit", "after"])),
       pick(row, ["note", "remark", "memo", "description"]) || "—",
@@ -437,7 +442,9 @@ async function render() {
     show("login");
     $("guide-root").classList.add("hidden");
     clearGuideTarget();
-    if (!$("captcha-image").dataset.id) await refreshCaptcha();
+    if (!$("captcha-image").dataset.id || captchaIsStale()) {
+      await refreshCaptcha($("captcha-image").dataset.id ? "expired" : "load");
+    }
     if (state.error) setMessage($("login-message"), state.error, true);
     return;
   }
@@ -530,46 +537,178 @@ function fillConfirmFiles(files) {
 function closeConfirm() {
   pendingConfirm = null;
   $("confirm-dialog").classList.add("hidden");
+  $("confirm-dialog").classList.remove("compare-open");
+  $("confirm-dialog").classList.remove("model-open");
   $("confirm-check").checked = false;
   $("confirm-go").disabled = true;
+  $("confirm-go").textContent = "确认写入";
   $("confirm-models-wrap").classList.add("hidden");
   $("confirm-models").innerHTML = "";
   $("confirm-versions-wrap").classList.add("hidden");
   $("confirm-versions").innerHTML = "";
+  $("confirm-auth-compare").classList.add("hidden");
+  $("auth-diff").classList.add("hidden");
+  $("auth-diff").replaceChildren();
   setMessage($("confirm-message"), "", false);
 }
 
-function pricingCaption(pricing) {
-  if (!pricing) return "";
-  const sell = pricing.sell || {};
-  const official = pricing.official || {};
-  const rate = pricing.multiplier ? `倍率 ${pricing.multiplier}` : "";
-  let prices = "";
-  if (sell.usd_per_image || official.usd_per_image) {
-    prices = `定价 ${official.usd_per_image || "—"} / 张 · 售价 ${sell.usd_per_image || "—"} / 张`;
-  } else if (sell.usd_per_second || official.usd_per_second) {
-    prices = `定价 ${official.usd_per_second || "—"} / 秒 · 售价 ${sell.usd_per_second || "—"} / 秒`;
-  } else if (sell.input_usd_per_1m || official.input_usd_per_1m) {
-    prices = `定价 输入 ${official.input_usd_per_1m || "—"} / 输出 ${official.output_usd_per_1m || "—"} · 售价 输入 ${sell.input_usd_per_1m || "—"} / 输出 ${sell.output_usd_per_1m || "—"}`;
+function authSide(compare, versionId) {
+  if (!compare || !compare.versions) return null;
+  return compare.versions[versionId] || null;
+}
+
+function authVerdict(current, selected) {
+  const cur = current.auth || {};
+  const sel = selected.auth || {};
+  const curRoute = current.route || {};
+  const selRoute = selected.route || {};
+  const curRelay = Boolean(cur.relay || curRoute.relay);
+  const selRelay = Boolean(sel.relay || selRoute.relay);
+  if (!sel.present) {
+    return { kind: "missing", text: "这份备份里没有 auth.json。确认后，当前 auth.json 会被删除。" };
   }
-  return [rate, prices].filter(Boolean).join(" · ");
+  if (cur.mode === "apikey" && sel.mode === "chatgpt" && !selRoute.relay) {
+    return { kind: "leave", text: "回退后会离开中转站，改回 ChatGPT 登录。" };
+  }
+  if (curRelay && selRelay) {
+    return { kind: "stay", text: "这份备份也是中转站配置，回退不会回到官方账号。" };
+  }
+  if (cur.mode === sel.mode && curRoute.provider === selRoute.provider) {
+    return { kind: "same", text: "两边的登录方式和接口一致，回退不会改变登录。" };
+  }
+  return { kind: "change", text: `回退后登录方式会改成「${sel.label || "所选备份"}」。` };
+}
+
+function fillAuthCard(node, eyebrow, side) {
+  node.replaceChildren();
+  const who = document.createElement("p");
+  who.className = "who";
+  who.textContent = eyebrow;
+  const title = document.createElement("h3");
+  title.textContent = (side.auth && side.auth.label) || "未读取";
+  const cred = document.createElement("p");
+  cred.className = "cred";
+  cred.textContent = (side.auth && side.auth.credential) || "";
+  const route = document.createElement("p");
+  route.className = "route";
+  route.textContent = (side.route && side.route.label) || "";
+  node.append(who, title, cred, route);
+}
+
+function fillAuthDiff(current, selected) {
+  const table = document.createElement("table");
+  const head = document.createElement("tr");
+  ["字段", "当前", "选中备份"].forEach((text) => {
+    const cell = document.createElement("th");
+    cell.textContent = text;
+    head.appendChild(cell);
+  });
+  table.appendChild(head);
+  const left = new Map((current.auth.fields || []).map((item) => [item.name, item.value]));
+  const right = new Map((selected.auth.fields || []).map((item) => [item.name, item.value]));
+  const names = [...new Set([...left.keys(), ...right.keys()])].sort();
+  if (!names.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 3;
+    cell.textContent = "两边都没有可对比的字段。";
+    row.appendChild(cell);
+    table.appendChild(row);
+  }
+  names.forEach((name) => {
+    const row = document.createElement("tr");
+    const a = left.has(name) ? left.get(name) : "（无）";
+    const b = right.has(name) ? right.get(name) : "（无）";
+    if (a !== b) row.className = "diff";
+    [name, a, b].forEach((text) => {
+      const cell = document.createElement("td");
+      cell.textContent = text;
+      row.appendChild(cell);
+    });
+    table.appendChild(row);
+  });
+  $("auth-diff").replaceChildren(table);
+}
+
+function renderAuthCompare() {
+  const wrap = $("confirm-auth-compare");
+  const compare = pendingConfirm && pendingConfirm.authCompare;
+  const versionId = $("confirm-versions").value;
+  const selected = authSide(compare, versionId);
+  if (!compare || !compare.current || !selected) {
+    wrap.classList.add("hidden");
+    $("confirm-dialog").classList.remove("compare-open");
+    if (pendingConfirm && pendingConfirm.kind === "restore") $("confirm-go").textContent = "确认恢复";
+    return;
+  }
+  wrap.classList.remove("hidden");
+  $("confirm-dialog").classList.add("compare-open");
+  fillAuthCard($("auth-current"), "当前正在使用", compare.current);
+  fillAuthCard($("auth-selected"), "选中的这份备份", selected);
+  $("auth-selected").classList.add("selected");
+  const verdict = authVerdict(compare.current, selected);
+  const note = $("auth-verdict");
+  note.className = `auth-verdict ${verdict.kind}`;
+  note.textContent = verdict.text;
+  $("confirm-go").textContent = verdict.kind === "stay" ? "仍然恢复这份中转站配置" : "确认恢复";
+  fillAuthDiff(compare.current, selected);
+}
+
+function modelProvider(slug) {
+  const head = String(slug || "").split("/")[0];
+  const known = { codex: "Codex", grok: "Grok", workbuddy: "WorkBuddy", antigravity: "Antigravity" };
+  if (known[head]) return { id: head, label: known[head] };
+  return { id: "catalog", label: "目录" };
+}
+
+function priceChips(pricing) {
+  if (!pricing) return [];
+  const sell = pricing.sell || {};
+  const chips = [];
+  if (pricing.multiplier) chips.push(["倍率", pricing.multiplier]);
+  if (sell.input_usd_per_1m || sell.output_usd_per_1m) {
+    chips.push(["入", sell.input_usd_per_1m || "—"]);
+    chips.push(["出", sell.output_usd_per_1m || "—"]);
+  } else if (sell.usd_per_image) {
+    chips.push(["每张", sell.usd_per_image]);
+  } else if (sell.usd_per_second) {
+    chips.push(["每秒", sell.usd_per_second]);
+  }
+  return chips;
+}
+
+function applyModelFilter() {
+  const wrap = $("confirm-models-wrap");
+  const query = (wrap.querySelector(".model-search")?.value || "").trim().toLowerCase();
+  const provider = wrap.querySelector(".model-filters button.active")?.dataset.provider || "all";
+  wrap.querySelectorAll(".model-item").forEach((card) => {
+    const blob = `${card.dataset.name || ""} ${card.dataset.slug || ""}`.toLowerCase();
+    const matched = (!query || blob.includes(query)) && (provider === "all" || card.dataset.provider === provider);
+    card.classList.toggle("filtered", !matched);
+  });
 }
 
 function fillConfirmModels(models, harnessId, local = false) {
   const wrap = $("confirm-models-wrap");
   const list = $("confirm-models");
-  wrap.querySelector('.model-selection-actions')?.remove();
-  list.innerHTML = "";
+  wrap.querySelector(".model-selection-actions")?.remove();
+  wrap.querySelector(".model-toolbar")?.remove();
+  list.replaceChildren();
   const show = Boolean((local || MODEL_PICKER[harnessId]) && models && models.length);
   wrap.classList.toggle("hidden", !show);
-  if (!show) {
-    return;
-  }
+  $("confirm-dialog").classList.toggle("model-open", show);
+  if (!show) return;
+  const providers = new Map();
   models.forEach((item) => {
     const slug = item.slug || item.id || "";
     if (!slug) return;
+    const provider = modelProvider(slug);
+    providers.set(provider.id, provider.label);
     const label = document.createElement("label");
     label.className = "model-item";
+    label.dataset.slug = slug;
+    label.dataset.name = item.display_name || slug;
+    label.dataset.provider = provider.id;
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = true;
@@ -583,14 +722,45 @@ function fillConfirmModels(models, harnessId, local = false) {
       small.textContent = slug;
       text.appendChild(small);
     }
-    if (item.pricing) {
-      const price = document.createElement("small");
-      price.textContent = pricingCaption(item.pricing);
-      text.appendChild(price);
+    const chips = priceChips(item.pricing);
+    if (chips.length) {
+      const prices = document.createElement("span");
+      prices.className = "model-prices";
+      chips.forEach(([name, value]) => {
+        const chip = document.createElement("i");
+        chip.textContent = `${name} ${value}`;
+        prices.appendChild(chip);
+      });
+      text.appendChild(prices);
     }
     label.append(input, text);
     list.appendChild(label);
   });
+  const toolbar = document.createElement("div");
+  toolbar.className = "model-toolbar";
+  const search = document.createElement("input");
+  search.className = "model-search";
+  search.type = "search";
+  search.placeholder = "搜索名称或 ID";
+  search.addEventListener("input", applyModelFilter);
+  const filters = document.createElement("div");
+  filters.className = "model-filters";
+  const addFilter = (id, text) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.provider = id;
+    button.textContent = text;
+    button.className = id === "all" ? "active" : "";
+    button.addEventListener("click", () => {
+      filters.querySelectorAll("button").forEach((node) => node.classList.toggle("active", node === button));
+      applyModelFilter();
+    });
+    filters.appendChild(button);
+  };
+  addFilter("all", "全部");
+  if (providers.size > 1) providers.forEach((label, id) => addFilter(id, label));
+  toolbar.append(search, filters);
+  list.before(toolbar);
   list.before(window.modelSelectionControls(list));
 }
 
@@ -630,6 +800,9 @@ async function beginApply(harnessId, local = null) {
     : "我已备份，确认写入 MinKing";
   $("confirm-go").textContent = harnessId === "codex" ? "确认写入并同步会话" : "确认写入";
   $("confirm-backup-actions").classList.remove("hidden");
+  $("confirm-versions-wrap").classList.add("hidden");
+  $("confirm-auth-compare").classList.add("hidden");
+  $("confirm-dialog").classList.remove("compare-open");
   fillConfirmFiles(preview.files || backup.files);
   fillConfirmModels(preview.models || (lastState && lastState.model_choices) || [], harnessId, Boolean(local));
   const path = backup.backup_path || backup.backup_dir || "";
@@ -650,6 +823,9 @@ async function beginSyncSessions(local = null) {
   $("confirm-check-label").textContent = "我已完全退出 Codex（含托盘），确认同步会话";
   $("confirm-go").textContent = "同步会话";
   $("confirm-backup-actions").classList.add("hidden");
+  $("confirm-versions-wrap").classList.add("hidden");
+  $("confirm-auth-compare").classList.add("hidden");
+  $("confirm-dialog").classList.remove("compare-open");
   fillConfirmModels([], "");
   const list = $("confirm-files");
   list.innerHTML = "";
@@ -674,6 +850,7 @@ function fillConfirmVersions(versions) {
     select.appendChild(option);
   });
   if (items.length) select.value = items[0].id || "";
+  renderAuthCompare();
 }
 
 async function beginRestore(harnessId, local = null) {
@@ -683,7 +860,14 @@ async function beginRestore(harnessId, local = null) {
     setMessage($("main-message"), (preview && preview.error) || "无法预览恢复", true);
     return;
   }
-  pendingConfirm = { kind: "restore", local, id: harnessId, backupPath: "", backupDir: preview.snapshot_dir || "" };
+  pendingConfirm = {
+    kind: "restore",
+    local,
+    id: harnessId,
+    backupPath: "",
+    backupDir: preview.snapshot_dir || "",
+    authCompare: harnessId === "codex" ? preview.auth_compare : null,
+  };
   $("confirm-connection").textContent = '';
   $("confirm-title").textContent = `回退 ${preview.display_name || "工具配置"}`;
   $("confirm-sub").textContent = harnessId === "codex"
@@ -747,7 +931,11 @@ async function boot() {
     return;
   }
   booted = true;
-  $("captcha-refresh").addEventListener("click", refreshCaptcha);
+  $("captcha-refresh").addEventListener("click", () => refreshCaptcha("manual"));
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refreshCaptchaIfStale();
+  });
+  window.addEventListener("focus", refreshCaptchaIfStale);
   $("tab-login").addEventListener("click", () => setAuthMode("login"));
   $("tab-register").addEventListener("click", () => setAuthMode("register"));
   document.querySelectorAll(".nav-item").forEach((el) => {
@@ -755,11 +943,11 @@ async function boot() {
   });
   $("mail-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const captchaId = $("captcha-image").dataset.id;
-    if (!captchaId) {
-      setMessage($("login-message"), "请先加载图片验证码", true);
+    if (!$("captcha-image").dataset.id || captchaIsStale()) {
+      await refreshCaptcha("expired");
       return;
     }
+    const captchaId = $("captcha-image").dataset.id;
     const name = authMode === "register" ? $("name").value.trim() : "";
     if (authMode === "register" && !name) {
       setMessage($("login-message"), "注册请填写姓名", true);
@@ -851,7 +1039,19 @@ async function boot() {
   $("confirm-check").addEventListener("change", () => {
     $("confirm-go").disabled = !$("confirm-check").checked;
   });
+  $("confirm-versions").addEventListener("change", renderAuthCompare);
+  $("auth-diff-toggle").addEventListener("click", () => {
+    $("auth-diff").classList.toggle("hidden");
+  });
   $("confirm-cancel").addEventListener("click", closeConfirm);
+  const openContact = () => $("contact-dialog").classList.remove("hidden");
+  const closeContact = () => $("contact-dialog").classList.add("hidden");
+  $("login-contact").addEventListener("click", openContact);
+  $("sidebar-contact").addEventListener("click", openContact);
+  $("contact-close").addEventListener("click", closeContact);
+  $("contact-dialog").addEventListener("click", (event) => {
+    if (event.target === $("contact-dialog")) closeContact();
+  });
   $("confirm-open-backup").addEventListener("click", async () => {
     if (!pendingConfirm) return;
     const result = await api().open_backup_folder(pendingConfirm.backupPath || pendingConfirm.backupDir || "");
@@ -939,15 +1139,48 @@ async function boot() {
   }
 }
 
-async function refreshCaptcha() {
-  const result = await api().get_captcha();
-  if (!result.ok) {
-    setMessage($("login-message"), result.error || "无法加载验证码", true);
-    return;
+function captchaIsStale() {
+  return !captchaLoadedAt || Date.now() - captchaLoadedAt >= CAPTCHA_REFRESH_MS;
+}
+
+function loginFormVisible() {
+  return !$("login-shell").classList.contains("hidden") && !$("mail-form").classList.contains("hidden");
+}
+
+function scheduleCaptchaRefresh() {
+  window.clearTimeout(captchaTimer);
+  captchaTimer = window.setTimeout(() => {
+    if (loginFormVisible()) refreshCaptcha("expired");
+  }, CAPTCHA_REFRESH_MS);
+}
+
+function refreshCaptchaIfStale() {
+  if (loginFormVisible() && captchaIsStale()) refreshCaptcha("expired");
+}
+
+async function refreshCaptcha(reason) {
+  const ticket = ++captchaRequest;
+  const button = $("captcha-refresh");
+  if (button) button.disabled = true;
+  try {
+    const result = await api().get_captcha();
+    if (ticket !== captchaRequest) return false;
+    if (!result.ok) {
+      setMessage($("login-message"), result.error || "无法加载验证码", true);
+      return false;
+    }
+    $("captcha-image").src = result.image;
+    $("captcha-image").dataset.id = result.id;
+    $("captcha-answer").value = "";
+    captchaLoadedAt = Date.now();
+    scheduleCaptchaRefresh();
+    if (reason === "expired") {
+      setMessage($("login-message"), "图片验证码已更新，请按新图重新填写。", false);
+    }
+    return true;
+  } finally {
+    if (ticket === captchaRequest && button) button.disabled = false;
   }
-  $("captcha-image").src = result.image;
-  $("captcha-image").dataset.id = result.id;
-  $("captcha-answer").value = "";
 }
 
 function clearGuideTarget() {

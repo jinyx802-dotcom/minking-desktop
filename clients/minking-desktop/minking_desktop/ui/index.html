@@ -49,6 +49,7 @@
               <img id="captcha-image" alt="图片验证码">
             </button>
           </div>
+          <span class="fineprint">图片验证码约 4 分钟自动更换。过期后请按新图重新填写。</span>
         </label>
         <button id="send-code-btn" type="submit" class="primary">发送登录验证码 <span>↗</span></button>
       </form>
@@ -59,6 +60,7 @@
         <button id="back-to-email" type="button" class="text-button">更换邮箱</button>
       </form>
       <p id="login-message" class="message" role="status"></p>
+      <button id="login-contact" type="button" class="contact-link">联系我们</button>
     </section>
   </div>
 
@@ -77,6 +79,7 @@
       </nav>
       <div class="sidebar-foot">
         <p id="side-credit" class="side-credit">额度 —</p>
+        <button id="sidebar-contact" type="button" class="contact-link">联系我们</button>
         <button id="logout" type="button" class="outline">退出登录</button>
       </div>
     </aside>
@@ -213,6 +216,16 @@
     </div>
   </div>
 
+  <div id="contact-dialog" class="dialog hidden" role="dialog" aria-modal="true" aria-labelledby="contact-title">
+    <div class="dialog-card contact-card">
+      <button id="contact-close" type="button" class="contact-x" aria-label="关闭">×</button>
+      <p class="eyebrow">微信</p>
+      <h2 id="contact-title">联系我们</h2>
+      <img class="contact-qr" src="wechat-qr.png" alt="微信二维码">
+      <p class="contact-note">扫码添加</p>
+    </div>
+  </div>
+
   <div id="confirm-dialog" class="dialog hidden" role="dialog" aria-modal="true">
     <div class="dialog-card dialog-wide">
       <p class="eyebrow">确认</p>
@@ -225,6 +238,16 @@
         <label>选择要恢复的版本
           <select id="confirm-versions"></select>
         </label>
+      </div>
+      <div id="confirm-auth-compare" class="hidden">
+        <div class="auth-compare">
+          <article id="auth-current" class="auth-card"></article>
+          <div class="auth-arrow" aria-hidden="true">→</div>
+          <article id="auth-selected" class="auth-card"></article>
+        </div>
+        <p id="auth-verdict" class="auth-verdict"></p>
+        <button id="auth-diff-toggle" type="button" class="mini">查看字段差异</button>
+        <div id="auth-diff" class="auth-diff hidden"></div>
       </div>
       <div id="confirm-models-wrap" class="hidden">
         <p class="sub" id="confirm-models-label">选择要写入的模型，默认全部勾选。不需要的可以取消。</p>

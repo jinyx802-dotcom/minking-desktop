@@ -355,6 +355,14 @@ def test_preview_and_backup_do_not_write_until_apply(tmp_path):
     restore_preview = app.preview_restore("codex")
     assert restore_preview["ok"] is True
     assert live["OPENAI_API_KEY"] == "sk-ts-secret-key"
+    compare = restore_preview["auth_compare"]
+    assert compare["current"]["auth"]["label"] == "中转站 API Key"
+    assert compare["current"]["auth"]["relay"] is True
+    chosen = compare["versions"][restore_preview["versions"][0]["id"]]
+    assert chosen["auth"]["mode"] == "chatgpt"
+    dumped = json.dumps(compare, ensure_ascii=False)
+    assert "sk-ts-secret-key" not in dumped
+    assert "chatgpt-official" not in dumped
 
 
 def test_export_backup_without_window_returns_hint(tmp_path):

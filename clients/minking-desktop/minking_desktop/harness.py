@@ -460,6 +460,119 @@ def restore_available(harness_id: str, *, profile_root: Path) -> bool:
     return bool(list_restore_versions(harness_id, profile_root=profile_root))
 
 
+def _mask_config_value(key: str, value: Any) -> str:
+    if isinstance(value, dict):
+        return "有" if value else "空"
+    if isinstance(value, list):
+        return f"{len(value)} 项" if value else "空"
+    if isinstance(value, bool):
+        return "是" if value else "否"
+    if value is None:
+        return "空"
+    text = str(value).strip()
+    secret = any(part in key.lower() for part in ("token", "key", "secret", "password"))
+    if not secret and len(text) <= 18:
+        return text or "空"
+    if len(text) <= 8:
+        return "••••"
+    return text[:4] + "…" + text[-4:]
+
+
+def describe_auth_file(path: Path) -> dict[str, Any]:
+    """Identity of an auth.json without returning tokens or full keys."""
+    if not path.is_file():
+        return {
+            "present": False,
+            "mode": "missing",
+            "label": "没有 auth.json",
+            "credential": "确认后会删除当前文件",
+            "relay": False,
+            "fields": [],
+        }
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {
+            "present": True,
+            "mode": "invalid",
+            "label": "无法读取",
+            "credential": "不是合法的 JSON",
+            "relay": False,
+            "fields": [],
+        }
+    if not isinstance(payload, dict):
+        return {
+            "present": True,
+            "mode": "invalid",
+            "label": "无法读取",
+            "credential": "内容不是配置对象",
+            "relay": False,
+            "fields": [],
+        }
+    mode = _codex_auth_mode(path)
+    key = payload.get("OPENAI_API_KEY")
+    key_text = key.strip() if isinstance(key, str) else ""
+    relay = mode == "apikey" and key_text.startswith("sk-ts-")
+    if mode == "chatgpt":
+        label, credential = "ChatGPT 登录", "已保存登录令牌"
+    elif mode == "apikey":
+        label = "中转站 API Key" if relay else "API Key"
+        credential = _mask_config_value("OPENAI_API_KEY", key_text) if key_text else "已保存密钥"
+    elif mode:
+        label, credential = mode, "已保存凭据"
+    else:
+        label, credential = "未识别的登录", "没有看到令牌或密钥"
+    fields = [
+        {"name": name, "value": _mask_config_value(name, payload[name])}
+        for name in sorted(payload)
+        if isinstance(name, str)
+    ]
+    return {
+        "present": True,
+        "mode": mode or "unknown",
+        "label": label,
+        "credential": credential,
+        "relay": relay,
+        "fields": fields,
+    }
+
+
+def describe_route_file(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        return {"present": False, "provider": "", "relay": False, "label": "没有 config.toml"}
+    try:
+        parsed = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError):
+        return {"present": True, "provider": "", "relay": False, "label": "无法读取接口配置"}
+    provider = ""
+    if isinstance(parsed, dict) and isinstance(parsed.get("model_provider"), str):
+        provider = parsed["model_provider"].strip()
+    relay = provider == "minkingapi"
+    if relay:
+        label = "接口指向中转站"
+    elif provider:
+        label = f"接口 {provider}"
+    else:
+        label = "未指定接口"
+    return {"present": True, "provider": provider, "relay": relay, "label": label}
+
+
+def _config_side(directory: Path) -> dict[str, Any]:
+    return {
+        "auth": describe_auth_file(directory / "auth.json"),
+        "route": describe_route_file(directory / "config.toml"),
+    }
+
+
+def codex_restore_compare(*, home: Path, profile_root: Path) -> dict[str, Any]:
+    recipe = recipe_by_id("codex", public_base="https://local.invalid/v1")
+    versions = {
+        item["id"]: _config_side(Path(item["path"]))
+        for item in list_restore_versions("codex", profile_root=profile_root)
+    }
+    return {"current": _config_side(_live_dir(recipe, home=home)), "versions": versions}
+
+
 def _restore_source(harness_id: str, *, profile_root: Path, version: str | None) -> Path | None:
     chosen = (version or "").strip()
     if chosen and not _RESTORE_VERSION_ID.fullmatch(chosen):

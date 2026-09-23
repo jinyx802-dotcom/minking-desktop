@@ -1,0 +1,24 @@
+[Unit]
+Description=Transfer Station Codex Account Pool
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=transfer-station
+Group=transfer-station
+WorkingDirectory=/opt/transfer-station
+EnvironmentFile=/opt/transfer-station/.env
+ExecStart=/opt/transfer-station/.venv/bin/python -m app
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+LimitNOFILE=8192
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/transfer-station/data
+
+[Install]
+WantedBy=multi-user.target

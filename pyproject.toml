@@ -1,6 +1,6 @@
 [project]
 name = "transfer-station"
-version = "0.8.27"
+version = "0.8.28"
 description = "Multi-provider OpenAI-compatible forwarding gateway"
 requires-python = ">=3.11"
 dependencies = [

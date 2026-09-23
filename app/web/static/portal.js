@@ -4,7 +4,7 @@ const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({'&
 const number = value => new Intl.NumberFormat('zh-CN').format(Number(value || 0));
 const money = value => `$${Number(value || 0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:8})}`;
 const formatTime = value => {if(!value)return '—';const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;};
-const statusLabel = {success:'成功',failed:'失败',interrupted:'中断',in_progress:'进行中',usage:'扣费',grant:'加款',redeem:'卡密',adjust:'调整'};
+const statusLabel = {success:'成功',failed:'失败',interrupted:'中断',in_progress:'进行中',usage:'扣费',grant:'加款',redeem:'卡密',adjust:'调整',reversal:'冲正'};
 let csrf = "", captchaId = "", challengeId = "", activeEmail = "", authMode = "login";
 let callsPage = 1, ledgerPage = 1;
 
@@ -95,7 +95,7 @@ async function loadLedger() {
   $('wallet-ledger').innerHTML = rows.length ? rows.map(row => {
     const kind = row.kind || row.type || '';
     const reasonLabels={success:'调用成功',failed:'调用失败（按可信用量结算）',interrupted:'调用中断（按可信用量结算）',card_redeem:'卡密兑换',new_user:'新用户赠送'};
-    return `<tr><td>${escapeHtml(formatTime(row.created_at))}</td><td>${escapeHtml(kind==='reversal'?'账单冲正':statusLabel[kind] || kind || '—')}</td><td>${money(row.amount_usd ?? row.amount)}</td><td>${money(row.balance_after ?? row.balance)}</td><td>${escapeHtml(reasonLabels[row.reason] || row.reason || row.note || '—')}</td></tr>`;
+    return `<tr><td>${escapeHtml(formatTime(row.created_at))}</td><td>${escapeHtml(statusLabel[kind] || kind || '—')}</td><td>${money(row.amount_usd ?? row.amount)}</td><td>${money(row.balance_after ?? row.balance)}</td><td>${escapeHtml(reasonLabels[row.reason] || row.reason || row.note || '—')}</td></tr>`;
   }).join('') : '<tr><td colspan="5">暂无资金流水</td></tr>';
   $('ledger-page').textContent = total ? `第 ${ledgerPage} 页 · 共 ${total} 条` : `第 ${ledgerPage} 页`;
   $('ledger-prev').disabled = ledgerPage <= 1;

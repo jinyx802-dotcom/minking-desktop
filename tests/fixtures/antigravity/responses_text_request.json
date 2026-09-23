@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3-flash",
+  "stream": true,
+  "instructions": "You are a coding agent. Do not mention hosted image or web search tools.",
+  "input": [
+    {
+      "type": "message",
+      "role": "user",
+      "content": [{"type": "input_text", "text": "Reply with ok only."}]
+    }
+  ]
+}

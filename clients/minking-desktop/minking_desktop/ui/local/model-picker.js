@@ -12,14 +12,16 @@ for (const id of ['test-model','default-model']) {
   input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-expanded','false');input.setAttribute('aria-controls',list.id);
   let choices=[],active=-1,search='';
   const close=()=>{list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');};
-  const position=()=>{const rect=wrap.getBoundingClientRect();const below=innerHeight-rect.bottom-12,above=rect.top-12;const up=below<180&&above>below;list.style.left=rect.left+'px';list.style.width=rect.width+'px';list.style.maxHeight=Math.min(280,Math.max(100,up?above:below))+'px';list.style.top=up?'auto':rect.bottom+6+'px';list.style.bottom=up?innerHeight-rect.top+6+'px':'auto';};
+  const position=()=>{const rect=wrap.getBoundingClientRect();const below=innerHeight-rect.bottom-12,above=rect.top-12;const up=below<220&&above>below;const width=Math.max(rect.width,320);list.style.left=rect.left+'px';list.style.width=width+'px';list.style.maxHeight=Math.min(420,Math.max(160,up?above:below))+'px';list.style.top=up?'auto':rect.bottom+6+'px';list.style.bottom=up?innerHeight-rect.top+6+'px':'auto';};
   const highlight=()=>{[...list.querySelectorAll('[role=option]')].forEach((option,i)=>{option.classList.toggle('active',i===active);option.setAttribute('aria-selected',String(i===active));});const option=list.children[active];if(active>=0&&option){input.setAttribute('aria-activedescendant',option.id);option.scrollIntoView({block:'nearest'});}else input.removeAttribute('aria-activedescendant');};
   const choose=index=>{if(!choices[index])return;input.value=choices[index].id;close();input.dispatchEvent(new Event('input',{bubbles:true}));close();input.focus();};
   const draw=()=>{
-    choices=state.accounts.flatMap(a=>a.models).filter(m=>(id!=='test-model'||modelKind(m)===callMode)&&m.id.toLowerCase().includes(search));
+    choices=state.accounts.flatMap(a=>a.models.map(m=>({...m,account:a.name}))).filter(m=>(id!=='test-model'||modelKind(m)===callMode)&&`${m.id} ${m.account||''}`.toLowerCase().includes(search));
     list.replaceChildren();active=-1;
     choices.forEach((model,index)=>{const option=document.createElement('div');option.id=list.id+'-'+index;option.setAttribute('role','option');option.className='model-choice';
-      const name=document.createElement('span');name.textContent=model.id;const kind=document.createElement('small');kind.textContent={text:'文本',image:'图片',video:'视频'}[modelKind(model)];option.append(name,kind);
+      const name=document.createElement('span');name.className='model-choice-id';name.textContent=model.id;
+      const meta=document.createElement('small');meta.textContent=[model.account,{text:'文本',image:'图片',video:'视频'}[modelKind(model)]].filter(Boolean).join(' · ');
+      option.append(name,meta);
       option.addEventListener('pointerdown',e=>e.preventDefault());option.addEventListener('click',()=>choose(index));list.append(option);
     });
     if(!choices.length){const empty=document.createElement('p');empty.className='picker-empty';empty.textContent=search?'没有匹配的模型，可直接输入模型 ID':'此类型暂无可用模型';list.append(empty);}

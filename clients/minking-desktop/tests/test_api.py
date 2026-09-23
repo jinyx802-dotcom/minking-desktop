@@ -121,6 +121,14 @@ class FakeTransport:
         return 404, {"error": {"message": "missing", "code": "not_found"}}
 
 
+def test_login_errors_are_chinese():
+    expired = ApiError("Image code expired or incorrect", code="invalid_captcha")
+    assert expired.message == "图片验证码已过期或不正确，请换一张再试"
+    mailed = ApiError("Verification email could not be sent", code="mail_unavailable")
+    assert "Verification" not in mailed.as_dict()["error"]
+    assert "发不出去" in mailed.as_dict()["error"]
+
+
 def test_login_bootstrap_and_key_mocked():
     transport = FakeTransport()
     client = PortalClient("https://portal.example", request=transport)

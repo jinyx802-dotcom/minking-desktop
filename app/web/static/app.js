@@ -143,7 +143,7 @@ function table(columns, rows) {
   return `<table><thead><tr>${columns.map(([, label]) => `<th>${esc(label)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map(([key]) => `<td>${cell(key, row)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
 }
 
-const chip = (value) => ({html:`<span class="chip ${esc(value)}">${esc(({success:"成功",failed:"失败",interrupted:"中断",active:"正常",disabled:"已禁用",invalid:"失效",cooling:"冷却中",revoked:"已吊销",deleted:"已删除",priority:"已开启",off:"关闭",primary:"主账号",failover:"故障转移",unconfigured:"未配置",unused:"未使用",redeemed:"已兑换",expired:"已过期",usage:"用量",grant:"赠送",redeem:"卡密",adjust:"调整"})[value] || value)}</span>`});
+const chip = (value) => ({html:`<span class="chip ${esc(value)}">${esc(({success:"成功",failed:"失败",interrupted:"中断",active:"正常",disabled:"已禁用",invalid:"失效",cooling:"冷却中",revoked:"已吊销",deleted:"已删除",priority:"已开启",off:"关闭",primary:"主账号",failover:"故障转移",unconfigured:"未配置",unused:"未使用",redeemed:"已兑换",expired:"已过期",usage:"用量",grant:"赠送",redeem:"卡密",adjust:"调整",reversal:"冲正"})[value] || value)}</span>`});
 const formatUsd = (value) => {
   if (value == null || value === "") return "—";
   const number = Number(value);

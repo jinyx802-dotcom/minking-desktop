@@ -259,6 +259,49 @@ async def _retry_pause(delay_seconds: float) -> None:
     await asyncio.sleep(delay_seconds)
 
 
+def _output_delta_bytes(event: str, data: str) -> int:
+    """Bytes of output text actually forwarded to the client.
+
+    Count deltas only. Done events repeat the same text and would double-charge.
+    """
+    if not data or data == "[DONE]":
+        return 0
+    try:
+        payload = json.loads(data)
+    except json.JSONDecodeError:
+        return 0
+    if not isinstance(payload, dict):
+        return 0
+    event_type = str(payload.get("type") or event or "")
+    if event_type == "response.output_text.delta" and isinstance(payload.get("delta"), str):
+        return len(payload["delta"].encode())
+    total = 0
+    choices = payload.get("choices")
+    if isinstance(choices, list):
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            delta = choice.get("delta")
+            if isinstance(delta, dict) and isinstance(delta.get("content"), str):
+                total += len(delta["content"].encode())
+    return total
+
+
+def _usage_has_billable_fields(usage: dict[str, Any] | None) -> bool:
+    return isinstance(usage, dict) and any(
+        key in usage
+        for key in (
+            "input_tokens",
+            "prompt_tokens",
+            "output_tokens",
+            "completion_tokens",
+            "images",
+            "seconds",
+            "hosted_images",
+        )
+    )
+
+
 def _usage_from_sse_data(data: str) -> dict[str, Any] | None:
     if not data or data == "[DONE]":
         return None
@@ -425,6 +468,7 @@ class CallContext:
     finalized: bool = False
     route_bound: bool = False
     billed_images: int = 0
+    delivered_output_bytes: int = 0
     provider: str = "codex"
     text_mode: str = "responses_sse"
     grok_freeform_tools: frozenset[str] = frozenset()
@@ -484,7 +528,19 @@ class CodexGateway:
             self._maintenance_loop(), name="gateway-daily-maintenance"
         )
         self._routing_heartbeat_task = asyncio.create_task(self._routing_heartbeat(), name="routing-lease-heartbeat")
-        await gateway_store.execute("UPDATE billing_requests SET state='pending',outcome='process_recovered',updated_at=? WHERE state='reserved' AND request_id IN (SELECT request_id FROM call_records WHERE status<>'in_progress')", (iso_now(),))
+        recovered_at = iso_now()
+        await gateway_store.execute(
+            "UPDATE billing_requests SET state='released',outcome='process_recovered',updated_at=? "
+            "WHERE state='reserved' AND request_id IN ("
+            "SELECT request_id FROM call_records WHERE status IN ('failed','interrupted'))",
+            (recovered_at,),
+        )
+        await gateway_store.execute(
+            "UPDATE billing_requests SET state='pending',outcome='process_recovered',updated_at=? "
+            "WHERE state='reserved' AND request_id IN ("
+            "SELECT request_id FROM call_records WHERE status<>'in_progress')",
+            (recovered_at,),
+        )
 
     async def stop(self) -> None:
         if self._routing_heartbeat_task is not None:
@@ -658,6 +714,14 @@ class CodexGateway:
                 context.response_model = context.model
             if context.billed_images:
                 usage = {**(usage or {}), "hosted_images": context.billed_images}
+            if (
+                status != "success"
+                and not _usage_has_billable_fields(usage)
+                and context.delivered_output_bytes > 0
+            ):
+                # The usage frame never arrived, but the client already received text.
+                # Bill that text as one token per byte, capped later by the reservation.
+                usage = {"output_tokens": context.delivered_output_bytes}
             await gateway_store.finalize_call(
                 request_id=context.request_id,
                 ended_at=iso_now(),
@@ -4657,9 +4721,11 @@ class CodexGateway:
                 buffer += chunk.decode("utf-8", errors="replace")
                 blocks, buffer = iter_sse_blocks(buffer)
                 for block in blocks:
-                    extracted = _usage_from_sse_data(parse_sse_event(block)[1])
+                    event, data = parse_sse_event(block)
+                    extracted = _usage_from_sse_data(data)
                     if extracted is not None:
                         usage = extracted
+                    context.delivered_output_bytes += _output_delta_bytes(event, data)
                 yield chunk
             if buffer.strip():
                 extracted = _usage_from_sse_data(parse_sse_event(buffer)[1])
@@ -4874,11 +4940,16 @@ class CodexGateway:
                         self._log_codex_upstream_returned(context, event_type, _payload)
                         terminal_failure = terminal_failure or event_type in {"response.failed", "error"}
                         completed = _completed_from_event(event, data) or completed
+                        forwarded = False
                         if chat:
                             for encoded in convert_sse_to_chat_chunks(event, data, state):
                                 yield encoded
+                                forwarded = True
                         elif not compact_pending:
                             yield f"{stamp_sse_created_at(piece, created_at=created_at)}\n\n".encode()
+                            forwarded = True
+                        if forwarded:
+                            context.delivered_output_bytes += _output_delta_bytes(event, data)
             if buffer.strip():
                 outgoing = (
                     rewrite_grok_codex_sse_block(buffer, rewrite, rewrite_state)
@@ -4891,11 +4962,16 @@ class CodexGateway:
                     self._log_codex_upstream_returned(context, event_type, _payload)
                     terminal_failure = terminal_failure or event_type in {"response.failed", "error"}
                     completed = _completed_from_event(event, data) or completed
+                    forwarded = False
                     if chat:
                         for encoded in convert_sse_to_chat_chunks(event, data, state):
                             yield encoded
+                            forwarded = True
                     elif not compact_pending:
                         yield f"{stamp_sse_created_at(piece, created_at=created_at)}\n\n".encode()
+                        forwarded = True
+                    if forwarded:
+                        context.delivered_output_bytes += _output_delta_bytes(event, data)
             if compact_pending:
                 try:
                     wrapped = self._wrap_grok_compact(completed, context)

@@ -1,0 +1,58 @@
+{
+  "project": "example-cloud-project",
+  "model": "gemini-3.8-flash-tiered",
+  "requestType": "agent",
+  "userAgent": "antigravity",
+  "request": {
+    "systemInstruction": {
+      "role": "user",
+      "parts": [{"text": "Use only declared function tools. apply_patch is available."}]
+    },
+    "contents": [
+      {
+        "role": "user",
+        "parts": [{"text": "Patch README."}]
+      },
+      {
+        "role": "model",
+        "parts": [
+          {
+            "functionCall": {
+              "name": "apply_patch",
+              "args": {"path": "README.md", "patch": "*** Begin Patch\n*** End Patch\n"}
+            }
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "parts": [
+          {
+            "functionResponse": {
+              "name": "apply_patch",
+              "response": {"content": "ok"}
+            }
+          }
+        ]
+      }
+    ],
+    "tools": [
+      {
+        "functionDeclarations": [
+          {
+            "name": "apply_patch",
+            "description": "Apply a unified patch to a file",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {"type": "string"},
+                "patch": {"type": "string"}
+              },
+              "required": ["path", "patch"]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
