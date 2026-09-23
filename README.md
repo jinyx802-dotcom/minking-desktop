@@ -74,6 +74,10 @@ Authorization: Bearer sk-ts-...
 
 ## 桌面端
 
+云端工作空间里可以查看每款工具的接入状态，一键切到 MinKing，或回退到官方配置。
+
+![桌面端的接入工具](docs/screenshots/desktop-tools.png)
+
 支持把这些本机工具接到 MinKing 云，或恢复官方登录：
 
 | 工具 | 云端写入 |
@@ -85,6 +89,10 @@ Authorization: Bearer sk-ts-...
 | ZCode | `provider_config.json`，每个模型一条供应商 |
 
 官方 `auth.json`、Cookie 和 token 不会上传。第一次接入前会留下快照，之后每次接入再保留一份备份。回到官方配置时可以选择要恢复的版本。Codex 的「一键同步会话」在原对话上更新路由，不另建一份会话。
+
+写入前会列出将要修改的文件、可选模型和备份目录。默认选中当前目录里的模型，确认后才写入。
+
+![接入 Codex 前确认要写入的文件和模型](docs/screenshots/desktop-codex-connect.png)
 
 桌面登录态用 Windows DPAPI 保护。关闭窗口后程序留在托盘，从托盘选择退出才会结束。
 
