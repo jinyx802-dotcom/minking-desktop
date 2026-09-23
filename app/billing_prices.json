@@ -1,0 +1,388 @@
+{
+  "source": "official",
+  "as_of": "2026-09-23",
+  "fx_cny_per_usd": "7.20",
+  "notes": "Short-context standard rates. Cached is the published cache-read price. CNY cards (Zhipu, Kimi China, Hunyuan) are converted at 7.20 CNY per USD and rounded to 4 decimals. DeepSeek uses the official USD off-peak rate. Image and video rows use the published per-image or per-second anchor for the default tier.",
+  "models": [
+    {
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "10",
+      "official_cached_usd_per_1m": "1",
+      "official_output_usd_per_1m": "50"
+    },
+    {
+      "model": "gpt-6-sol",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.20",
+      "official_output_usd_per_1m": "10"
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.10",
+      "official_cached_usd_per_1m": "0.01",
+      "official_output_usd_per_1m": "0.50"
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "4",
+      "official_cached_usd_per_1m": "0.40",
+      "official_output_usd_per_1m": "20"
+    },
+    {
+      "model": "gpt-5.6-sol-wm",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "4",
+      "official_cached_usd_per_1m": "0.40",
+      "official_output_usd_per_1m": "20"
+    },
+    {
+      "model": "gpt-5.6-terra",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.20",
+      "official_output_usd_per_1m": "12"
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.20",
+      "official_cached_usd_per_1m": "0.02",
+      "official_output_usd_per_1m": "1.20"
+    },
+    {
+      "model": "gpt-5.5",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "5",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "30"
+    },
+    {
+      "model": "codex-auto-review",
+      "provider": "codex",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.20",
+      "official_cached_usd_per_1m": "0.02",
+      "official_output_usd_per_1m": "1.20"
+    },
+    {
+      "model": "gpt-image-2",
+      "provider": "codex",
+      "modality": "image",
+      "official_usd_per_image": "0.053"
+    },
+    {
+      "model": "gpt-image-2.5-flare",
+      "provider": "codex",
+      "modality": "image",
+      "official_usd_per_image": "0.053"
+    },
+    {
+      "model": "gpt-image-2.5-sunburst",
+      "provider": "codex",
+      "modality": "image",
+      "official_usd_per_image": "0.053"
+    },
+    {
+      "model": "grok-4.7",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "6"
+    },
+    {
+      "model": "grok-4.7-build-fast",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "6"
+    },
+    {
+      "model": "grok-4.6",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "6"
+    },
+    {
+      "model": "grok-4.6-build",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "6"
+    },
+    {
+      "model": "grok-4.5",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.30",
+      "official_output_usd_per_1m": "6"
+    },
+    {
+      "model": "grok-build-0.1",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "1",
+      "official_cached_usd_per_1m": "0.20",
+      "official_output_usd_per_1m": "2"
+    },
+    {
+      "model": "gpt-reserve",
+      "provider": "grok",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "6"
+    },
+    {
+      "model": "grok-imagine-image-2.0",
+      "provider": "grok",
+      "modality": "image",
+      "official_usd_per_image": "0.04"
+    },
+    {
+      "model": "grok-imagine-image",
+      "provider": "grok",
+      "modality": "image",
+      "official_usd_per_image": "0.02"
+    },
+    {
+      "model": "grok-imagine-video-1.5",
+      "provider": "grok",
+      "modality": "video",
+      "official_usd_per_second": "0.08"
+    },
+    {
+      "model": "grok-imagine-video",
+      "provider": "grok",
+      "modality": "video",
+      "official_usd_per_second": "0.05"
+    },
+    {
+      "model": "gemini-3.8-flash",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.75",
+      "official_cached_usd_per_1m": "0.075",
+      "official_output_usd_per_1m": "3.75"
+    },
+    {
+      "model": "gemini-3.7-flash",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.75",
+      "official_cached_usd_per_1m": "0.075",
+      "official_output_usd_per_1m": "3.75"
+    },
+    {
+      "model": "gemini-3.1-pro",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.20",
+      "official_output_usd_per_1m": "12"
+    },
+    {
+      "model": "gemini-pro-agent",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "2",
+      "official_cached_usd_per_1m": "0.20",
+      "official_output_usd_per_1m": "12"
+    },
+    {
+      "model": "gemini-3-flash",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.50",
+      "official_cached_usd_per_1m": "0.05",
+      "official_output_usd_per_1m": "3"
+    },
+    {
+      "model": "gemini-3-flash-agent",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.50",
+      "official_cached_usd_per_1m": "0.05",
+      "official_output_usd_per_1m": "3"
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.30",
+      "official_cached_usd_per_1m": "0.03",
+      "official_output_usd_per_1m": "2.50"
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.25",
+      "official_cached_usd_per_1m": "0.025",
+      "official_output_usd_per_1m": "1.50"
+    },
+    {
+      "model": "gemini-2.5-pro",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "1.25",
+      "official_cached_usd_per_1m": "0.125",
+      "official_output_usd_per_1m": "10"
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.30",
+      "official_cached_usd_per_1m": "0.03",
+      "official_output_usd_per_1m": "2.50"
+    },
+    {
+      "model": "gemini-2.5-flash-thinking",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.30",
+      "official_cached_usd_per_1m": "0.03",
+      "official_output_usd_per_1m": "2.50"
+    },
+    {
+      "model": "gemini-2.5-flash-lite",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.10",
+      "official_cached_usd_per_1m": "0.01",
+      "official_output_usd_per_1m": "0.40"
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "3",
+      "official_cached_usd_per_1m": "0.30",
+      "official_output_usd_per_1m": "15"
+    },
+    {
+      "model": "claude-opus-4-6-thinking",
+      "provider": "antigravity",
+      "modality": "text",
+      "official_input_usd_per_1m": "5",
+      "official_cached_usd_per_1m": "0.50",
+      "official_output_usd_per_1m": "25"
+    },
+    {
+      "model": "gemini-3.1-flash-image",
+      "provider": "antigravity",
+      "modality": "image",
+      "official_usd_per_image": "0.067"
+    },
+    {
+      "model": "workbuddy/glm-5.2",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "1.1111",
+      "official_cached_usd_per_1m": "0.2778",
+      "official_output_usd_per_1m": "3.8889"
+    },
+    {
+      "model": "workbuddy/glm-5.1",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.8333",
+      "official_cached_usd_per_1m": "0.1806",
+      "official_output_usd_per_1m": "3.3333"
+    },
+    {
+      "model": "workbuddy/glm-5v-turbo",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.6944",
+      "official_cached_usd_per_1m": "0.1667",
+      "official_output_usd_per_1m": "3.0556"
+    },
+    {
+      "model": "workbuddy/kimi-k2.7",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.9028",
+      "official_cached_usd_per_1m": "0.1806",
+      "official_output_usd_per_1m": "3.75"
+    },
+    {
+      "model": "workbuddy/minimax-m3-pay",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.30",
+      "official_cached_usd_per_1m": "0.06",
+      "official_output_usd_per_1m": "1.20"
+    },
+    {
+      "model": "workbuddy/hy3",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.1389",
+      "official_cached_usd_per_1m": "0.0347",
+      "official_output_usd_per_1m": "0.5556"
+    },
+    {
+      "model": "workbuddy/hy3-preview",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.1389",
+      "official_cached_usd_per_1m": "0.0347",
+      "official_output_usd_per_1m": "0.5556"
+    },
+    {
+      "model": "workbuddy/hy3-preview-agent",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.1389",
+      "official_cached_usd_per_1m": "0.0347",
+      "official_output_usd_per_1m": "0.5556"
+    },
+    {
+      "model": "workbuddy/deepseek-v4-pro",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.66",
+      "official_cached_usd_per_1m": "0.022",
+      "official_output_usd_per_1m": "1.98"
+    },
+    {
+      "model": "workbuddy/deepseek-v4-flash",
+      "provider": "workbuddy",
+      "modality": "text",
+      "official_input_usd_per_1m": "0.15",
+      "official_cached_usd_per_1m": "0.003",
+      "official_output_usd_per_1m": "0.60"
+    },
+    {
+      "model": "hunyuan-image-v3.0",
+      "provider": "workbuddy",
+      "modality": "image",
+      "official_usd_per_image": "0.0278"
+    },
+    {
+      "model": "workbuddy/hunyuan-image-v3.0",
+      "provider": "workbuddy",
+      "modality": "image",
+      "official_usd_per_image": "0.0278"
+    }
+  ]
+}

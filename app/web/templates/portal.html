@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="app-root-path" content="{{ root_path }}">
+  <title>个人工作台 · MinKing AI</title>
+  <link rel="icon" href="{{ root_path }}/static/favicon.ico?v={{ version }}">
+  <link rel="apple-touch-icon" href="{{ root_path }}/static/apple-touch-icon.png?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/portal.css?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/console.css?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/theme.css?v={{ version }}">
+  <script>
+    (function () {
+      var theme = localStorage.getItem("minking-theme") || localStorage.getItem("lyxh-theme") || "light";
+      if (theme !== "light" && theme !== "dark" && theme !== "blue") theme = "light";
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <script src="{{ root_path }}/static/theme.js?v={{ version }}" defer></script>
+  <script src="{{ root_path }}/static/portal.js?v={{ version }}" defer></script>
+  <script src="{{ root_path }}/static/console-portal.js?v={{ version }}" defer></script>
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="sparkles"></span>
+  </div>
+  <header class="top">
+    <a class="brand" href="{{ root_path }}/portal">
+      <img class="brand-mark" src="{{ root_path }}/static/brand-mark.png?v={{ version }}" alt="">
+      <span>MinKing <em>AI</em></span>
+    </a>
+    <div class="top-tools">
+      <div class="theme-switch">
+        <button type="button" class="theme-toggle" aria-expanded="false" aria-haspopup="true" aria-label="切换配色"><span class="theme-orb"></span></button>
+        <div class="theme-menu" hidden>
+          <button type="button" data-theme="light" aria-label="浅色配色"><i></i></button>
+          <button type="button" data-theme="dark" aria-label="深色配色"><i></i></button>
+          <button type="button" data-theme="blue" aria-label="蓝色配色"><i></i></button>
+        </div>
+      </div>
+      <span class="top-caption">PERSONAL CONSOLE <i></i> 01</span>
+    </div>
+  </header>
+  <main>
+    <section id="login-view" class="entry">
+      <div class="entry-copy">
+        <span class="tag"><span class="pulse"></span> YOUR ACCESS, YOUR SPACE</span>
+        <h1>你的模型网络，<br><em>即刻接入。</em></h1>
+        <p>一个邮箱，一把专属密钥。查看每次调用的轨迹，下载配置，开始创造。</p>
+        <div class="entry-markers"><span>01 / 验证邮箱</span><span>02 / 领取密钥</span><span>03 / 开始调用</span></div>
+      </div>
+      <div class="entry-card">
+        <div class="card-header"><span class="eyebrow">ACCESS PORTAL / 01</span><span class="round-mark">↗</span></div>
+        <h2>进入个人工作台</h2>
+        <div class="auth-tabs" role="tablist">
+          <button id="tab-login" type="button" class="auth-tab active" role="tab" aria-selected="true">登录</button>
+          <button id="tab-register" type="button" class="auth-tab" role="tab" aria-selected="false">注册</button>
+        </div>
+        <p id="auth-sub" class="sub">已有账号用邮箱验证码登录。</p>
+        <form id="mail-form" class="form">
+          <label id="name-field" class="hidden">你的姓名<input id="name" maxlength="100" autocomplete="name" placeholder="请输入姓名"></label>
+          <label>邮箱地址<input id="email" type="email" maxlength="254" autocomplete="email" placeholder="name@example.com" required></label>
+          <label>图片验证码<div class="captcha-row"><input id="captcha-answer" maxlength="8" autocomplete="off" placeholder="输入图中字符" required><button id="captcha-refresh" type="button" class="captcha-image" aria-label="刷新图片验证码"><img id="captcha-image" alt="图片验证码"></button></div></label>
+          <button id="send-code-btn" type="submit" class="primary">发送登录验证码 <span>↗</span></button>
+        </form>
+        <form id="verify-form" class="form hidden">
+          <p class="verify-note">验证码已发送至 <strong id="verify-email"></strong>，10 分钟内有效。</p>
+          <label>邮箱验证码<input id="email-code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="六位数字" required></label>
+          <button type="submit" class="primary">验证并进入 <span>↗</span></button>
+          <button id="back-to-email" type="button" class="text-button">更换邮箱</button>
+        </form>
+        <p id="login-message" class="message" role="status"></p>
+        <div class="card-foot"><span>SECURED WITH EMAIL VERIFICATION</span><span>✳</span></div>
+      </div>
+    </section>
+    <section id="dashboard-view" class="dashboard hidden">
+      <div class="dashboard-top">
+        <div>
+          <span class="eyebrow">YOUR CONTROL ROOM / LIVE DATA</span>
+          <h1>你好，<span id="user-name"></span><span class="headline-dot">.</span></h1>
+          <p>这里是你的调用全貌。数据由网关实时汇总。</p>
+        </div>
+        <div class="dashboard-actions"><span id="user-email" class="email-badge"></span><button id="logout" class="outline">退出</button></div>
+      </div>
+      <div class="metrics">
+        <article class="metric metric-primary"><span>近 90 天调用</span><strong id="metric-calls">—</strong><small>COMPLETED REQUESTS ↗</small></article>
+        <article class="metric"><span>成功率</span><strong id="metric-rate">—</strong><small>近 90 天完成的请求</small></article>
+        <article class="metric"><span>消耗 Token</span><strong id="metric-tokens">—</strong><small>近 90 天已记录用量</small></article>
+        <article class="metric"><span>配置包下载</span><strong id="metric-downloads">—</strong><small>累计下载次数</small></article>
+      </div>
+      <div class="workspace-grid">
+        <article class="panel trend-panel">
+          <div class="panel-heading"><div><span class="eyebrow">TRAFFIC / 90 DAYS</span><h2>调用趋势</h2></div><span class="live"><i></i> 近 90 天</span></div>
+          <div id="chart" class="chart" role="img" aria-label="每日调用趋势"></div>
+          <div class="chart-foot"><span>较早</span><span>今天</span></div>
+        </article>
+        <article class="panel key-panel">
+          <div class="panel-heading"><div><span class="eyebrow">ACCESS KEY / PRIVATE</span><h2>我的连接</h2></div><span class="connection-dot">●</span></div>
+          <p class="key-caption">专属 API Key</p>
+          <div id="key-prefix" class="key-prefix">—</div>
+          <div class="key-meta"><span id="key-status"></span><span id="key-created"></span></div>
+          <button id="download" class="primary">下载 Codex 配置 ZIP <span>↓</span></button>
+          <button id="open-desktop" type="button" class="secondary">在 MinKing 客户端中打开 <span>↗</span></button>
+          <p class="fineprint">把 config.toml、codex-models.json 和 auth.json 放到 C:\Users\&lt;你的用户名&gt;\.codex（把「你的用户名」改成资源管理器 Users 下面那一段，例如 DELL）。config.toml 里的 model_catalog_json 必须写成 C:/Users/你的用户名/.codex/codex-models.json 这种绝对路径，Codex 不识别 %USERPROFILE%。再用 ZIP 里的 .env 设置 OPENAI_API_KEY 和 OPENAI_BASE_URL。auth.json 给 Codex 读密钥，避免没设环境变量时去走 ChatGPT 登录。请不要覆盖已有 Codex 配置，除非你确认要切换到 MinKing API。</p>
+          <p class="fineprint">Windows 客户端协议为 <code>minking://</code>。点击上方按钮会把站点地址和登录邮箱交给本机 MinKing 客户端；API Key 不会出现在链接里，由客户端用本地令牌向网关领取。</p>
+          <button id="rotate" class="text-button danger">轮换 API Key</button>
+        </article>
+      </div>
+      <div class="workspace-grid lower">
+        <article class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">AUDIT / YOUR CALLS</span><h2>调用明细</h2></div><span class="muted">仅显示你的请求</span></div>
+          <div class="table-scroll"><table><thead><tr><th>时间</th><th>模型</th><th>接口</th><th>输入</th><th>输出</th><th>费用</th><th>状态</th></tr></thead><tbody id="recent-calls"></tbody></table></div>
+          <div class="pager"><button id="calls-prev" class="text-button" type="button">上一页</button><span id="calls-page">第 1 页</span><button id="calls-next" class="text-button" type="button">下一页</button></div>
+        </article>
+        <article class="panel credit-panel">
+          <span class="eyebrow">USD BALANCE</span>
+          <h2>美元额度</h2>
+          <strong id="usd-credit">$0.00</strong>
+          <p>成功调用按官方价 × 系数记账。余额不足时当前不会拦截请求。</p>
+          <form id="redeem-form" class="redeem-form">
+            <label>卡密兑换<input id="redeem-code" maxlength="32" autocomplete="off" placeholder="MK-XXXX-XXXX-XXXX" spellcheck="false"></label>
+            <button type="submit" class="primary">兑换 <span>✓</span></button>
+          </form>
+          <div class="credit-decoration">$</div>
+        </article>
+      </div>
+      <div class="workspace-grid">
+        <article class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">WALLET LEDGER</span><h2>资金流水</h2></div><span class="muted">加款 / 扣费 / 卡密</span></div>
+          <div class="table-scroll"><table><thead><tr><th>时间</th><th>类型</th><th>金额</th><th>余额</th><th>说明</th></tr></thead><tbody id="wallet-ledger"></tbody></table></div>
+          <div class="pager"><button id="ledger-prev" class="text-button" type="button">上一页</button><span id="ledger-page">第 1 页</span><button id="ledger-next" class="text-button" type="button">下一页</button></div>
+        </article>
+      </div>
+      <p id="dashboard-message" class="message" role="status"></p>
+    </section>
+  </main>
+  <footer><span>MINKING AI © 2026</span><span>服务版本 v{{ version }}</span><span>PERSONAL ACCESS / SECURE SESSION</span></footer>
+</body>
+</html>

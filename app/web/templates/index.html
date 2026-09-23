@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="app-root-path" content="{{ root_path }}">
+  <title>MinKing AI</title>
+  <link rel="icon" href="{{ root_path }}/static/favicon.ico?v={{ version }}">
+  <link rel="apple-touch-icon" href="{{ root_path }}/static/apple-touch-icon.png?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/app.css?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/app-features.css?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/console.css?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/theme.css?v={{ version }}">
+  <script>
+    (function () {
+      var theme = localStorage.getItem("minking-theme") || localStorage.getItem("lyxh-theme") || "light";
+      if (theme !== "light" && theme !== "dark" && theme !== "blue") theme = "light";
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="sparkles"></span>
+  </div>
+
+  <main id="login-view" class="login-view">
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="login-hero">
+        <img class="brand-mark" src="{{ root_path }}/static/brand-mark.png?v={{ version }}" alt="">
+        <p class="eyebrow">MINKING AI</p>
+        <h1 id="login-title">MinKing AI</h1>
+        <p class="muted">多供应商网关 · 二次元管理台</p>
+      </div>
+      <form id="login-form" class="stack-form">
+        <label>用户名<input id="login-username" name="username" value="admin" autocomplete="username" required></label>
+        <label>密码<input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">进入后台</button>
+      </form>
+      <p id="login-error" class="form-error hidden" role="alert"></p>
+      <span class="version">服务版本 v{{ version }}</span>
+    </section>
+  </main>
+
+  <div id="app-shell" class="app-shell hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <img class="brand-mark small" src="{{ root_path }}/static/brand-mark.png?v={{ version }}" alt="">
+        <div><strong>MinKing AI</strong><span>多供应商网关</span></div>
+      </div>
+      <nav aria-label="管理菜单">
+        <span class="nav-group">工作空间</span>
+        <button class="nav-item active" data-page="dashboard">运营总览</button>
+        <button class="nav-item" data-page="accounts">账号与调度</button>
+        <button class="nav-item" data-page="keys">用户与密钥</button>
+        <span class="nav-group">调用与用量</span>
+        <button class="nav-item" data-page="calls">调用明细</button>
+        <button class="nav-item" data-page="usage">Token 统计</button>
+        <button class="nav-item" data-page="models">可用模型</button>
+        <span class="nav-group">计费中心</span>
+        <button class="nav-item" data-page="billing">定价与预算</button>
+        <button class="nav-item" data-page="bills">账单与核对</button>
+        <button class="nav-item" data-page="cards">卡密</button>
+        <button class="nav-item" data-page="ledger">资金流水</button>
+        <span class="nav-group">系统设置</span>
+        <button class="nav-item" data-page="errors">错误日志</button>
+        <button class="nav-item" data-page="skills">客户端技能</button>
+        <button class="nav-item" data-page="settings">账号设置</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="sidebar-user"><span>管理员</span><strong id="session-user">admin</strong></div>
+        <span class="service-version">服务版本 v{{ version }}</span>
+      </div>
+    </aside>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+    <section class="workspace">
+      <header class="topbar">
+        <button id="menu-toggle" class="icon-button" aria-label="打开菜单">☰</button>
+        <div><p class="eyebrow">ADMIN CONSOLE</p><h1 id="page-title">仪表盘</h1></div>
+        <div class="theme-switch">
+          <button type="button" class="theme-toggle" aria-expanded="false" aria-haspopup="true" aria-label="切换配色"><span class="theme-orb"></span></button>
+          <div class="theme-menu" hidden>
+            <button type="button" data-theme="light" aria-label="浅色配色"><i></i></button>
+            <button type="button" data-theme="dark" aria-label="深色配色"><i></i></button>
+            <button type="button" data-theme="blue" aria-label="蓝色配色"><i></i></button>
+          </div>
+        </div>
+        <div id="global-status" class="status-dot">已连接</div>
+      </header>
+
+      <div class="content">
+        <section class="page active" data-page-panel="dashboard">
+          <div class="console-welcome"><div><p class="eyebrow">YOUR MODEL UNIVERSE</p><h2>每一次创造，都清晰可见。</h2><p>调用、余额与账号状态，在这里一目了然。</p></div><img src="{{ root_path }}/static/brand-mark.png" alt="MinKing AI 品牌"></div>
+          <form id="console-range" class="range-bar"><div class="segmented"><button type="button" class="quiet active" data-range-days="1">今日</button><button type="button" class="quiet" data-range-days="7">7 天</button><button type="button" class="quiet" data-range-days="30">30 天</button></div><label>开始<input type="date" id="range-start" required></label><label>结束<input type="date" id="range-end" required></label><button type="submit" class="quiet">应用范围</button></form>
+          <div id="dashboard-metrics" class="metric-grid"></div>
+          <div class="card"><div class="section-head"><div><p class="eyebrow">ACTIVITY</p><h2>调用趋势</h2></div><span id="console-updated" class="hint"></span></div><div id="console-trend" class="console-trend" aria-label="调用趋势"></div></div>
+          <div class="card"><div class="section-head"><div><p class="eyebrow">RECENT</p><h2>最近错误</h2></div><button class="quiet" data-refresh="dashboard">刷新</button></div><div id="dashboard-errors" class="table-wrap"></div></div>
+        </section>
+
+        <section class="page" data-page-panel="accounts">
+          <div class="card"><div class="section-head"><div><p class="eyebrow">SMART ROUTING</p><h2>账号池运行状态</h2><p class="hint">自动请求按负载与额度分配；连续对话和手动路由保留绑定。</p></div><button class="quiet" id="routing-refresh">刷新调度</button></div><div id="routing-summary" class="routing-grid"></div></div>
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">CREDENTIALS</p><h2>上游账号</h2><span class="hint">进入后台时刷新额度，之后缓存 10 分钟。Codex 重置额度会消耗一张重置卡；Grok 与 WorkBuddy 显示积分进度，不可用重置卡。</span></div><div class="account-head-actions"><label class="quiet-select">筛选<select id="account-provider-filter"><option value="">全部</option><option value="codex">Codex</option><option value="grok">Grok</option><option value="antigravity">Antigravity</option><option value="workbuddy">WorkBuddy</option></select></label><button id="refresh-quotas" class="quiet" type="button">刷新额度</button><span id="account-count" class="count-badge">0</span></div></div>
+            <div class="mode-tabs" role="tablist">
+              <button type="button" class="quiet active" data-account-mode="login">网页登录</button>
+              <button type="button" class="quiet" data-account-mode="files">文件导入/导出</button>
+            </div>
+            <div id="account-login-pane">
+              <form id="oauth-start-form" class="inline-form">
+                <label>供应商<select id="oauth-provider"><option value="codex">Codex</option><option value="grok">Grok</option><option value="antigravity">Antigravity</option><option value="workbuddy">WorkBuddy</option></select></label>
+                <label id="oauth-workbuddy-realm-wrap" class="hidden">版本<select id="oauth-workbuddy-realm"><option value="cn">国内版</option><option value="global">国际版</option></select></label>
+                <button type="submit">打开登录页</button>
+              </form>
+              <div id="oauth-panel" class="oauth-panel hidden">
+                <p class="hint" id="oauth-hint">将打开官方登录页。登录完成后如果停在 localhost，把地址栏完整网址贴回来。</p>
+                <p id="oauth-user-code" class="oauth-user-code hidden"></p>
+                <p id="oauth-copy-wrap" class="hidden"><button id="oauth-copy-code" class="quiet" type="button">复制代码</button></p>
+                <p><a id="oauth-link" href="#" target="_blank" rel="noopener">打开登录页</a></p>
+                <form id="oauth-form" class="inline-form">
+                  <label>登录后的地址栏网址<input id="oauth-callback-url" placeholder="http://localhost:.../callback?code=..." autocomplete="off"></label>
+                  <button type="submit">完成登录</button>
+                </form>
+                <button id="oauth-cancel" class="quiet" type="button">取消</button>
+              </div>
+              <p class="hint">Codex 走 ChatGPT 登录，Grok 用 xAI 设备码，Antigravity 走 Google 登录；WorkBuddy 请在打开的专用页面完成授权，凭据保存在服务器，不会修改电脑上的 workbuddy-desktop.info。Codex / Antigravity 在远程管理台若跳到 localhost 打不开，把地址栏完整网址贴回来即可。</p>
+            </div>
+            <div id="account-files-pane" class="hidden">
+              <form id="upload-form" class="inline-form">
+                <label>供应商<select id="import-provider"><option value="codex">Codex</option><option value="grok">Grok</option><option value="antigravity">Antigravity</option><option value="workbuddy">WorkBuddy</option></select></label>
+                <input id="auth-files" name="files[]" type="file" accept="application/json,.json,.info" multiple required>
+                <button type="submit">导入文件</button>
+                <button id="import-local-grok" class="quiet hidden" type="button">导入本机 ~/.grok/auth.json</button>
+                <button id="import-local-antigravity" class="quiet hidden" type="button">导入本机 Antigravity oauth JSON</button>
+              </form>
+              <p class="hint">WorkBuddy 可选择 Windows 上的 %LOCALAPPDATA%\CodeBuddyExtension\Data\Public\auth\workbuddy-desktop.info。单文件最大 200KB，一批最多 50 个；相同账号会安全更新。</p>
+            </div>
+            <div id="import-result" class="notice hidden"></div>
+            <div id="accounts" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="keys">
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">✦ ROUTE CONSTELLATION</p><h2>使用者 / API Key</h2><span class="hint">每把 Key 都有自己的上游星轨，稳定连接，故障时自动切换。</span></div><span class="route-hero-symbol" aria-hidden="true">✧ · ✦ · ✧</span></div>
+            <form id="key-form" class="inline-form compact"><label>人员名称<input id="key-name" maxlength="100" placeholder="例如：张三" required></label><div class="switch-field"><span>Fast</span><label class="switch"><input id="key-fast-enabled" type="checkbox" aria-label="开启 Fast"><span class="switch-track"></span></label></div><button id="create-key-button" type="submit">创建 Key</button></form>
+            <p id="key-account-hint" class="hint">首次使用时按已分配 Key 数均衡选号；之后每把 Key 在每个供应商内固定使用当前账号。连续两次上游失败切换，同一账号的同一模型在 30 分钟内失败 10 次则冷却 10 分钟。Fast 仅作用于 Codex 文本请求。</p>
+            <div id="new-key" class="notice hidden"></div>
+            <div id="keys" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="calls">
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">AUDIT TRAIL</p><h2>调用明细</h2></div><button class="quiet" data-refresh="calls">刷新</button></div>
+            <form id="call-filters" class="filter-grid">
+              <label>开始日期<input name="start" type="date"></label><label>结束日期<input name="end" type="date"></label>
+              <label>使用者<select name="key_id"><option value="">全部</option></select></label>
+              <label>账号<select name="account_id"><option value="">全部</option></select></label>
+              <label>模型<input name="model" placeholder="全部模型"></label>
+              <label>接口<select name="endpoint"><option value="">全部</option><option>/v1/responses</option><option>/v1/chat/completions</option><option>/v1/images/generations</option><option>/v1/images/edits</option><option>/v1/videos/generations</option><option>/v1/videos</option><option>/v1/videos/edits</option><option>/v1/videos/extensions</option><option>/mcp/tools/generate_image</option><option>/mcp/tools/edit_image</option></select></label>
+              <label>状态<select name="status"><option value="">全部</option><option value="success">成功</option><option value="failed">失败</option><option value="interrupted">中断</option></select></label>
+              <button type="submit">筛选</button>
+            </form>
+            <div id="calls" class="table-wrap"></div>
+            <div class="pager"><button id="calls-prev" class="quiet">上一页</button><span id="calls-page">第 1 页</span><button id="calls-next" class="quiet">下一页</button></div>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="usage">
+          <div class="card"><div class="section-head"><div><p class="eyebrow">PEOPLE</p><h2>人员 Token 汇总</h2><span id="usage-range-label" class="hint">日</span></div><div class="segmented" aria-label="Token 统计范围"><button class="quiet active" data-usage-range="day">日</button><button class="quiet" data-usage-range="week">周</button><button class="quiet" data-usage-range="month">月</button><button class="quiet" data-usage-range="all">总量</button></div></div><div id="usage-summary" class="table-wrap"></div></div>
+          <div class="card"><div class="section-head"><div><p class="eyebrow">DIMENSIONS</p><h2>日期 / 模型 / 账号明细</h2></div><button class="quiet" data-refresh="usage">刷新</button></div><form id="usage-filters" class="filter-grid compact usage-filters"><label>模型<input name="model" placeholder="全部模型"></label><button type="submit">筛选</button></form><div id="usage-detail" class="table-wrap"></div></div>
+        </section>
+
+        <section class="page" data-page-panel="models"><div class="card"><div class="section-head"><div><p class="eyebrow">CATALOG</p><h2>可用模型</h2><span class="hint">上游列表会定期并入。没有列出来的 id 可以手动添加。冷却中的模型，以及因账号失效或已删除而显示为已禁用的模型，可以手动置为有效。</span></div><button class="quiet" id="models-pull">从上游拉取</button><button class="quiet" data-refresh="models">刷新</button></div><form id="model-add-form" class="filter-grid compact"><label>供应商<select name="provider"><option value="codex">Codex</option><option value="grok">Grok</option><option value="antigravity">Antigravity</option><option value="workbuddy">WorkBuddy</option></select></label><label>模型 id<input name="model_id" required placeholder="grok-4.7"></label><label>类型<select name="model_type"><option value="text">文本</option><option value="image">图片</option><option value="video">视频</option></select></label><button type="submit">添加模型</button></form><p id="model-add-message" role="status"></p><div id="models" class="table-wrap"></div></div></section>
+
+        <section class="page" data-page-panel="billing">
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">PRICING</p><h2>计费设置</h2><span class="hint">售价 = 官方定价 × 倍率。余额为 0 时拒绝调用。单次请求先预占预算，结束后按实际用量结算，超出预算的部分由平台承担。</span></div><button class="quiet" data-refresh="billing">刷新</button></div>
+            <form id="billing-settings-form" class="price-settings">
+              <label>全局倍率<input id="billing-multiplier" name="price_multiplier" required></label>
+              <label>新用户赠送 USD<input id="billing-new-user" name="new_user_usd" required></label>
+              <label>默认单次预算 USD<input id="billing-budget" type="number" min="0.00000001" max="10000" step="0.00000001" value="0.50" required></label>
+              <button type="submit">保存设置</button>
+            </form>
+            <div id="billing-settings-result" class="notice hidden"></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">OFFICIAL CATALOG</p><h2>模型定价</h2><span class="hint">文本按百万 Token，图片按张，视频按秒。内置价目能对上的模型可以补齐；补齐不会覆盖已经手改的官方价。没有官方价的模型不会下发给客户端。</span></div><button id="billing-sync" class="quiet" type="button">从内置价目补齐</button></div>
+            <p id="billing-sync-result" class="hint"></p>
+            <div id="billing-prices" class="table-wrap"></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">COST EXPLORER</p><h2>调用费用试算</h2><span class="hint">按当前倍率估算。结算仍以请求开始时的价格和实际用量为准。</span></div></div>
+            <form id="quote-form" class="price-settings">
+              <label>模型<select name="model" id="quote-model" required></select></label>
+              <label>输入 Token<input name="input_tokens" type="number" min="0" value="1000"></label>
+              <label>输出 Token<input name="output_tokens" type="number" min="0" value="1000"></label>
+              <label>图片张数<input name="images" type="number" min="0" value="0"></label>
+              <label>视频秒数<input name="seconds" type="number" min="0" value="0"></label>
+              <button>试算费用</button>
+            </form>
+            <p id="quote-result" role="status"></p>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="cards">
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">CARD KEYS</p><h2>卡密</h2><span class="hint">明文卡密只显示一次，请立即复制。用户端品牌为 MinKing AI。</span></div><button class="quiet" data-refresh="cards">刷新</button></div>
+            <form id="card-batch-form" class="inline-form">
+              <label>面额 USD<input id="card-amount" required></label>
+              <label>数量<input id="card-count" type="number" min="1" max="100" value="1" required></label>
+              <label>过期时间<input id="card-expires" type="datetime-local"></label>
+              <label>备注<input id="card-note" maxlength="200" placeholder="可选"></label>
+              <button type="submit">生成卡密</button>
+            </form>
+            <div id="card-result" class="notice hidden"></div>
+            <div id="cards" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="ledger">
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">WALLET</p><h2>人工入账</h2></div></div>
+            <form id="wallet-credit-form" class="inline-form">
+              <label>邮箱<input id="wallet-credit-email" type="email" required></label>
+              <label>金额 USD<input id="wallet-credit-amount" required inputmode="decimal" min="0.01" step="0.01" placeholder="大于 0"></label>
+              <label>原因<input id="wallet-credit-reason" maxlength="200" placeholder="可选"></label>
+              <button type="submit">入账</button>
+            </form>
+            <div id="wallet-credit-result" class="notice hidden"></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">LEDGER</p><h2>资金流水</h2></div><button class="quiet" data-refresh="ledger">刷新</button></div>
+            <form id="ledger-filters" class="filter-grid">
+              <label>邮箱<input name="email" placeholder="全部用户"></label>
+              <label>类型<select name="kind"><option value="">全部</option><option value="usage">用量</option><option value="grant">赠送</option><option value="redeem">卡密</option><option value="adjust">调整</option></select></label>
+              <label>开始日期<input name="start" type="date"></label>
+              <label>结束日期<input name="end" type="date"></label>
+              <button type="submit">筛选</button>
+            </form>
+            <div id="ledger" class="table-wrap"></div>
+            <div class="pager"><button id="ledger-prev" class="quiet">上一页</button><span id="ledger-page">第 1 页</span><button id="ledger-next" class="quiet">下一页</button></div>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="bills"><div class="card"><div class="section-head"><div><p class="eyebrow">RECONCILIATION</p><h2>账单与核对</h2><span class="hint">预占不是扣款；无可信用量的请求最多保留 24 小时，届时释放且不追扣。</span></div><select id="bills-state" aria-label="账单状态"><option value="">全部状态</option><option value="reserved">预占中</option><option value="pending">待核对</option><option value="settled">已结算</option><option value="released">已释放</option><option value="reversed">已冲正</option></select></div><div id="bills-table" class="table-wrap"></div><div class="pager"><button id="bills-prev" class="quiet">上一页</button><span id="bills-page"></span><button id="bills-next" class="quiet">下一页</button></div></div></section>
+        <section class="page" data-page-panel="errors"><div class="card"><div class="section-head"><div><p class="eyebrow">RING BUFFER</p><h2>错误日志</h2><span class="hint">最多保留 <span id="error-capacity">200</span> 条，每 15 秒自动刷新</span></div><button class="quiet" data-refresh="errors">刷新</button></div><div id="errors" class="table-wrap"></div></div></section>
+
+        <section class="page" data-page-panel="skills">
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">CLIENT SKILLS</p><h2>客户端技能</h2><p class="hint">桌面一键同步从这里拉 zip。上传覆盖保存在 data/client_skills，部署不会冲掉。内置副本仍在安装包里，点恢复内置即可退回。</p></div><button class="quiet" data-refresh="skills">刷新</button></div>
+            <form id="skill-upload-form" class="inline-form">
+              <label>技能 zip<input id="skill-zip" name="file" type="file" accept=".zip,application/zip" required></label>
+              <label>名称（可选）<input id="skill-name" name="name" placeholder="默认读 SKILL.md" maxlength="64"></label>
+              <button type="submit">上传覆盖</button>
+            </form>
+            <div id="skill-upload-result" class="notice hidden"></div>
+            <div id="client-skills" class="table-wrap"></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><p class="eyebrow">DESKTOP EXE</p><h2>客户端安装包</h2><p class="hint">网站下载的 MinKingAI.exe 放在 data/downloads，部署不会冲掉。换安装包在这里上传，不必再发一版网关。</p></div></div>
+            <p id="desktop-package-status" class="hint">正在读取当前安装包。</p>
+            <form id="desktop-package-form" class="inline-form">
+              <label>Windows 安装包<input id="desktop-package-file" name="file" type="file" accept=".exe,application/vnd.microsoft.portable-executable" required></label>
+              <button type="submit">上传安装包</button>
+            </form>
+            <div id="desktop-package-result" class="notice hidden"></div>
+          </div>
+        </section>
+
+        <section class="page" data-page-panel="settings">
+          <div class="card narrow"><div class="section-head"><div><p class="eyebrow">SECURITY</p><h2>修改管理员密码</h2></div></div><form id="password-form" class="stack-form"><label>当前密码<input name="current_password" type="password" autocomplete="current-password" required></label><label>新密码<input name="new_password" type="password" minlength="12" autocomplete="new-password" required></label><label>确认新密码<input name="confirm_password" type="password" minlength="12" autocomplete="new-password" required></label><button type="submit">更新密码</button></form><div id="password-result" class="notice hidden"></div><hr><button id="logout" class="danger">退出登录</button></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <dialog id="route-dialog" class="route-dialog" aria-labelledby="route-dialog-title">
+    <div class="route-dialog-head">
+      <div><p class="eyebrow">✦ UPSTREAM ROUTES</p><h2 id="route-dialog-title">上游路由</h2><p class="muted">为每个供应商选择当前账号；自动模式会在首次调用时均衡分配。</p></div>
+      <button type="button" class="quiet route-close" id="route-dialog-close" aria-label="关闭路由面板">✕</button>
+    </div>
+    <div id="route-dialog-body" class="route-grid"></div>
+    <p id="route-dialog-message" class="route-dialog-message" role="status"></p>
+  </dialog>
+
+  <dialog id="quota-reset-dialog" class="confirm-dialog">
+    <form id="quota-reset-form" class="stack-form">
+      <div>
+        <p class="eyebrow">IRREVERSIBLE ACTION</p>
+        <h2>确认重置 Codex 额度</h2>
+        <p class="muted">本操作会消耗一张重置卡，提交后无法撤销。</p>
+      </div>
+      <label>请输入 <strong>确定重置</strong>
+        <input id="quota-reset-phrase" autocomplete="off" placeholder="确定重置" required>
+      </label>
+      <div class="confirm-dialog-actions">
+        <button id="quota-reset-cancel" class="quiet" type="button">取消</button>
+        <button id="quota-reset-confirm" class="danger" type="submit" disabled>确认重置额度</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="{{ root_path }}/static/theme.js?v={{ version }}" defer></script>
+  <script src="{{ root_path }}/static/app.js?v={{ version }}" defer></script>
+  <script src="{{ root_path }}/static/console-admin.js?v={{ version }}" defer></script>
+</body>
+</html>

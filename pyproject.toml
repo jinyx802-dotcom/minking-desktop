@@ -1,0 +1,45 @@
+[project]
+name = "transfer-station"
+version = "0.8.27"
+description = "Multi-provider OpenAI-compatible forwarding gateway"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.28",
+    "pydantic-settings>=2.6",
+    "python-multipart>=0.0.17",
+    "jinja2>=3.1",
+    "python-dotenv>=1.0",
+    "argon2-cffi>=23.1",
+    "cryptography>=43.0",
+    "mcp>=1.29.1,<2.0",
+    "pymysql>=1.1",
+    "pillow>=11.0",
+    "imageio-ffmpeg>=0.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-m \"not integration\""
+markers = [
+    "integration: live upstream probes that need real credentials",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["tests*", "deploy*"]
+
+[tool.setuptools.package-data]
+app = ["web/templates/*.html", "web/static/*", "billing_prices.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

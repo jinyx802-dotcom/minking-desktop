@@ -1,0 +1,15 @@
+.harness-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:28px}
+.harness{background:#fff;border:1px solid #e3e9e2;border-radius:10px;padding:24px;box-shadow:none;min-width:0;color:#25342e}
+.harness-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.harness-head h3{display:flex;align-items:center;gap:10px;margin:0;font-size:17px;font-weight:600}
+.harness p{font-size:12px;line-height:1.8;color:#738078;margin:14px 0}
+.harness .tool-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;object-fit:contain;flex:none;border-radius:6px}
+.harness span.tool-icon{background:#eaf1e5;color:#547448;font-size:15px}
+.harness .pill{font-size:11px;font-weight:600;border-radius:99px;padding:4px 10px;border:1px solid #e3e9e2;color:#738078;white-space:nowrap}
+.harness .pill.cloud,.harness .pill.official{background:#eaf1e9;color:#216348}
+.harness .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.harness button.mini{font:12px 'Segoe UI','Microsoft YaHei',sans-serif;padding:9px 12px;border:1px solid #dce5db;border-radius:7px;background:#f7faf5;color:#315e40;cursor:pointer}
+.harness button.cloud{background:#216348;border-color:#216348;color:#fff}
+.harness button:disabled{opacity:.45;cursor:default}
+@media(max-width:1050px){.harness{padding:20px}}
+@media(max-width:600px){.harness-list{grid-template-columns:1fr}}

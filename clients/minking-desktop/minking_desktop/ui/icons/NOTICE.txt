@@ -1,0 +1,5 @@
+Platform icons sourced from @lobehub/icons-static-svg.
+Source: https://www.npmjs.com/package/@lobehub/icons-static-svg
+Project: https://github.com/lobehub/lobe-icons
+Names and logos belong to their respective owners.
+The CodeBuddy icon identifies WorkBuddy's shared client platform.

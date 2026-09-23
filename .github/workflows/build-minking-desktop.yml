@@ -1,0 +1,76 @@
+name: Build MinKing Desktop
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "clients/minking-desktop/**"
+      - ".github/workflows/build-minking-desktop.yml"
+  pull_request:
+    paths:
+      - "clients/minking-desktop/**"
+      - ".github/workflows/build-minking-desktop.yml"
+
+jobs:
+  build:
+    name: macOS
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: clients/minking-desktop
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -c "from pathlib import Path; Path('/tmp/req-mac.txt').write_text('\n'.join(line for line in Path('requirements.txt').read_text().splitlines() if not line.lower().startswith('pythonnet')), encoding='utf-8')"
+          python -m pip install -r /tmp/req-mac.txt -r requirements-mac.txt pyinstaller pytest
+
+      - name: Run desktop smoke tests
+        run: python -m pytest tests/test_packaging.py tests/test_windowing.py::test_wake_webview_resizes_even_when_live_size_is_zero -q
+
+      - name: Build Mac app
+        if: github.event_name == 'workflow_dispatch'
+        run: python -m PyInstaller --noconfirm --clean MinKingAI.spec
+
+      - name: Sign the app
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: bash scripts/sign_mac_app.sh
+
+      - name: Smoke the frozen app
+        if: github.event_name == 'workflow_dispatch'
+        run: ./dist/MinKingAI.app/Contents/MacOS/MinKingAI --pack-smoke
+
+      - name: Archive the app
+        if: github.event_name == 'workflow_dispatch'
+        run: python scripts/package_mac_artifact.py
+
+      - name: Publish desktop package to GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: minking-desktop-${{ github.run_id }}
+          name: MinKing Desktop ${{ github.run_id }}
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: clients/minking-desktop/artifacts/*.zip

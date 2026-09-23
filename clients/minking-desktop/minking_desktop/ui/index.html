@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MinKing AI</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="unified.css">
+  <link rel="stylesheet" href="tool-cards.css">
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+  </div>
+  <header class="top">
+    <div class="brand">
+      <img class="brand-mark" src="brand-mark.png" alt="">
+      <span>MinKing <em>AI</em></span>
+    </div>
+    <div class="top-actions">
+      <div class="workspace-tabs" role="group" aria-label="模型来源">
+        <button id="cloud-workspace" type="button" aria-pressed="true">云端服务</button>
+        <button id="local-workspace" type="button" aria-pressed="false">本地官方</button>
+      </div>
+      <span id="header-user" class="header-user hidden"></span>
+      <button id="settings-btn" class="ghost" type="button">设置</button>
+    </div>
+  </header>
+  <iframe id="local-workspace-frame" title="本地官方模型与 HTTP 服务" hidden></iframe>
+
+  <div id="login-shell">
+    <section id="login-view" class="panel login-card">
+      <p class="eyebrow">邮箱登录 / 托盘</p>
+      <h1>连接你的云端服务</h1>
+      <div class="auth-tabs" role="tablist">
+        <button id="tab-login" type="button" class="auth-tab active">登录</button>
+        <button id="tab-register" type="button" class="auth-tab">注册</button>
+      </div>
+      <p id="auth-sub" class="sub">已有账号用邮箱验证码登录。这里只切换 Codex / Claude Code / WorkBuddy 的配置，不是聊天窗口。</p>
+      <form id="mail-form" class="form">
+        <label id="name-field" class="hidden">你的姓名<input id="name" maxlength="100" autocomplete="name" placeholder="请输入姓名"></label>
+        <label>邮箱地址<input id="email" type="email" maxlength="254" autocomplete="email" placeholder="请输入邮箱" required></label>
+        <label>图片验证码
+          <div class="captcha-row">
+            <input id="captcha-answer" maxlength="8" autocomplete="off" placeholder="图中字符" required>
+            <button id="captcha-refresh" type="button" class="captcha-image" aria-label="刷新验证码">
+              <img id="captcha-image" alt="图片验证码">
+            </button>
+          </div>
+        </label>
+        <button id="send-code-btn" type="submit" class="primary">发送登录验证码 <span>↗</span></button>
+      </form>
+      <form id="verify-form" class="form hidden">
+        <p class="verify-note">验证码已发送至 <strong id="verify-email"></strong></p>
+        <label>6 位邮箱验证码<input id="email-code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="六位数字" required></label>
+        <button type="submit" class="primary">验证并进入 <span>↗</span></button>
+        <button id="back-to-email" type="button" class="text-button">更换邮箱</button>
+      </form>
+      <p id="login-message" class="message" role="status"></p>
+    </section>
+  </div>
+
+  <div id="app-shell" class="hidden">
+    <aside class="sidebar">
+      <p class="sidebar-label">云端工作空间</p>
+      <nav class="nav" aria-label="账户页面">
+        <button type="button" class="nav-item active" data-pane="dashboard">工作台</button>
+        <button type="button" class="nav-item" data-pane="calls">调用明细</button>
+        <button type="button" class="nav-item" data-pane="models">模型目录</button>
+        <button type="button" class="nav-item" data-pane="playground">调用测试</button>
+        <button type="button" class="nav-item" data-pane="ledger">资金流水</button>
+        <button type="button" class="nav-item" data-pane="redeem">卡密兑换</button>
+        <button type="button" class="nav-item" data-pane="tools">接入工具</button>
+        <button type="button" class="nav-item" data-pane="settings">设置</button>
+      </nav>
+      <div class="sidebar-foot">
+        <p id="side-credit" class="side-credit">额度 —</p>
+        <button id="logout" type="button" class="outline">退出登录</button>
+      </div>
+    </aside>
+    <div class="workspace">
+      <p id="main-message" class="message" role="status"></p>
+      <section id="pane-models" class="pane hidden"><iframe class="cloud-model-frame" title="云端模型目录" data-view="models"></iframe></section>
+      <section id="pane-playground" class="pane hidden"><iframe class="cloud-model-frame" title="云端调用测试" data-view="playground"></iframe></section>
+
+      <section id="pane-dashboard" class="pane">
+        <div class="cloud-intro"><div><p class="eyebrow">CLOUD WORKSPACE</p>
+        <h1>你的模型服务，尽在这里。</h1>
+        <p class="sub">从账户用量到工具接入，轻松管理每一次调用。</p></div>
+        <button class="primary inline" type="button" data-jump="playground">开始调用</button></div>
+        <div id="period-tabs" class="period-tabs hidden"></div>
+        <dl class="stats">
+          <div class="stat"><dt>额度（美元）</dt><dd id="dash-credit">—</dd></div>
+          <div class="stat"><dt>调用次数</dt><dd id="dash-calls">—</dd></div>
+          <div class="stat"><dt>成功率</dt><dd id="dash-success">—</dd></div>
+          <div class="stat"><dt>失败率</dt><dd id="dash-fail">—</dd></div>
+          <div class="stat"><dt>输入令牌</dt><dd id="dash-in">—</dd></div>
+          <div class="stat"><dt>输出令牌</dt><dd id="dash-out">—</dd></div>
+          <div class="stat"><dt>缓存令牌</dt><dd id="dash-cached">—</dd></div>
+        </dl>
+        <p id="dash-note" class="banner hidden"></p>
+        <div class="cloud-section-heading"><div><p class="eyebrow">GET STARTED</p><h2>接下来，想做些什么？</h2></div><span class="muted">同一个账号，连接你的工作流</span></div>
+        <div class="cloud-shortcuts">
+          <button type="button" data-jump="models"><span class="shortcut-number">01 / EXPLORE</span><strong>找到合适的模型</strong><span>浏览云端模型目录，选好模型直接试用。</span><span class="shortcut-action">浏览模型</span></button>
+          <button type="button" data-jump="tools"><span class="shortcut-number">02 / CONNECT</span><strong>接入常用工具</strong><span>将 Codex、Grok 等工具连接到云端服务。</span><span class="shortcut-action">配置接入</span></button>
+          <button type="button" data-jump="calls"><span class="shortcut-number">03 / REVIEW</span><strong>了解每一次调用</strong><span>查看模型、状态与令牌用量，掌握使用情况。</span><span class="shortcut-action">查看明细</span></button>
+        </div>
+      </section>
+
+      <section id="pane-calls" class="pane hidden">
+        <p class="eyebrow">REQUEST HISTORY</p>
+        <h1>调用明细</h1>
+        <p class="sub">只显示你的密钥产生的调用，不含请求内容。</p>
+        <p id="calls-note" class="banner hidden"></p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>模型</th>
+                <th>状态</th>
+                <th>令牌用量（输入 / 输出 / 缓存）</th>
+                <th>合计</th>
+                <th>费用（美元）</th>
+              </tr>
+            </thead>
+            <tbody id="calls-body"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button id="calls-prev" type="button" class="mini">上一页</button>
+          <span id="calls-page">第 1 页</span>
+          <button id="calls-next" type="button" class="mini">下一页</button>
+        </div>
+      </section>
+
+      <section id="pane-ledger" class="pane hidden">
+        <p class="eyebrow">ACCOUNT LEDGER</p>
+        <h1>资金流水</h1>
+        <p class="sub">额度变动记录。不含密钥或卡密原文。</p>
+        <p id="ledger-note" class="banner hidden"></p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>类型</th>
+                <th>金额</th>
+                <th>余额</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button id="ledger-prev" type="button" class="mini">上一页</button>
+          <span id="ledger-page">第 1 页</span>
+          <button id="ledger-next" type="button" class="mini">下一页</button>
+        </div>
+      </section>
+
+      <section id="pane-redeem" class="pane hidden">
+        <p class="eyebrow">ADD CREDIT</p>
+        <h1>卡密兑换</h1>
+        <p class="sub">为下一次灵感准备好额度。兑换成功后，余额会自动更新。</p>
+        <div class="cloud-form-panel">
+        <p id="wallet-credit" class="side-credit">当前额度 —</p>
+        <form id="redeem-form" class="form redeem-form">
+          <label>卡密<input id="redeem-code" maxlength="128" autocomplete="off" spellcheck="false" placeholder="输入卡密"></label>
+          <button type="submit" class="primary">兑换 <span>✓</span></button>
+        </form>
+        <p id="redeem-note" class="banner hidden"></p>
+        </div>
+      </section>
+
+      <section id="pane-tools" class="pane hidden">
+        <p class="eyebrow">CONNECTED TOOLS</p>
+        <h1>接入工具</h1>
+        <p class="sub">把本机 Codex / Grok / Claude Code / WorkBuddy 在 MinKing 云和官方登录之间切换。写入前会备份并请你确认。</p>
+        <div id="harness-list" class="harness-list"></div>
+      </section>
+
+      <section id="pane-settings" class="pane hidden">
+        <p class="eyebrow">PREFERENCES</p>
+        <h1>设置</h1>
+        <p class="sub">管理云端连接地址与客户端偏好。</p>
+        <div class="cloud-form-panel">
+        <label>接口地址<input id="settings-url" spellcheck="false" placeholder="https://ceshi.007ka.cn/maliang/v1"></label>
+        <div class="row-actions">
+          <button id="save-console-settings" type="button" class="primary inline">保存 <span>✓</span></button>
+        </div>
+        <p id="settings-version" class="fineprint"></p>
+        <p class="fineprint">从网页点「在客户端中打开」会回到本窗口。首次启动会在当前用户下注册该协议。</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="settings-dialog" class="dialog hidden" role="dialog" aria-modal="true">
+    <div class="dialog-card">
+      <p class="eyebrow">设置</p>
+      <h2>接口地址</h2>
+      <p class="sub">默认指向现网门户。只有你明确改过才需要覆盖。</p>
+      <label>接口地址<input id="base-url" spellcheck="false" placeholder="https://ceshi.007ka.cn/maliang/v1"></label>
+      <div class="row-actions">
+        <button id="save-settings" type="button" class="primary inline">保存 <span>✓</span></button>
+        <button id="close-settings" type="button" class="outline">取消</button>
+      </div>
+      <p class="fineprint">从网页点「在客户端中打开」会回到本窗口。首次启动会在当前用户下注册该协议。</p>
+    </div>
+  </div>
+
+  <div id="confirm-dialog" class="dialog hidden" role="dialog" aria-modal="true">
+    <div class="dialog-card dialog-wide">
+      <p class="eyebrow">确认</p>
+      <h2 id="confirm-title">写入本地配置</h2>
+      <p class="sub" id="confirm-sub">以下文件将被修改。请先确认备份。</p>
+      <p class="fineprint" id="confirm-connection"></p>
+      <div class="dialog-scroll">
+      <ul id="confirm-files" class="file-list"></ul>
+      <div id="confirm-versions-wrap" class="hidden">
+        <label>选择要恢复的版本
+          <select id="confirm-versions"></select>
+        </label>
+      </div>
+      <div id="confirm-models-wrap" class="hidden">
+        <p class="sub" id="confirm-models-label">选择要写入的模型，默认全部勾选。不需要的可以取消。</p>
+        <div id="confirm-models" class="model-list"></div>
+      </div>
+      </div>
+      <p id="confirm-backup-path" class="fineprint"></p>
+      <div id="confirm-backup-actions" class="row-actions">
+        <button id="confirm-open-backup" type="button" class="mini">打开备份目录</button>
+        <button id="confirm-export-backup" type="button" class="mini">导出备份到文件夹</button>
+      </div>
+      <label class="check"><input id="confirm-check" type="checkbox"><span id="confirm-check-label">我已备份，确认写入 MinKing</span></label>
+      <p id="confirm-message" class="message" role="status"></p>
+      <div class="row-actions">
+        <button id="confirm-go" type="button" class="primary inline" disabled>确认写入</button>
+        <button id="confirm-cancel" type="button" class="outline">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="guide-root" class="guide hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+    <div class="guide-hole" id="guide-hole"></div>
+    <div class="guide-finger" id="guide-finger" aria-hidden="true">
+      <svg viewBox="0 0 64 64" width="56" height="56">
+        <path fill="#fff" stroke="#3a2a32" stroke-width="2.2" d="M28 6c2.4 0 4 1.8 4 4.2V26l.4-.2c.8-1.6 2.6-2.2 4.2-1.4 1.4.7 2 2.2 1.8 3.7V28c.8-1.2 2.4-1.8 3.8-1.2 1.5.6 2.2 2.2 1.8 3.8v.6c.8-1 2.4-1.4 3.8-.8 1.4.6 2.2 2.2 1.8 3.7l-3.6 14.2C44.4 54 39.6 58 34 58h-6.2C20 58 14 52.4 14 45.2V32.8c0-2.4 1.8-4.4 4.2-4.4 1.4 0 2.6.6 3.4 1.6V10.2C21.6 7.8 23.4 6 26 6h2z"/>
+        <path fill="#ffd6e4" d="M26 8c.8-.4 1.6-.4 2.2 0 .8.4 1.2 1.2 1.2 2.2v16.2h-3.4V10.2c0-1 .4-1.8 1.2-2.2z"/>
+      </svg>
+    </div>
+    <div class="guide-card" id="guide-card">
+      <p class="eyebrow" id="guide-step">指引</p>
+      <h2 id="guide-title">第一次使用</h2>
+      <p class="sub" id="guide-text"></p>
+      <div class="row-actions">
+        <button id="guide-next" type="button" class="primary inline">下一步 <span>↗</span></button>
+        <button id="guide-skip" type="button" class="outline">跳过</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="model-selection.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

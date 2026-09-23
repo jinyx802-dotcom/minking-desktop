@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MinKing AI · 本地模型</title>
+  <link rel="stylesheet" href="../tool-cards.css">
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="desktop.css"><script src="../model-selection.js" defer></script><script src="app.js" defer></script><script src="model-picker.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">M</span><span>MinKing <b>Local</b></span></div>
+    <p class="nav-label">本机工作空间</p>
+    <nav aria-label="窗口导航"><a href="#connection" data-view="connection" class="active">HTTP 服务 <span>↗</span></a><a href="#accounts" data-view="accounts">官方账号 <span>01</span></a><a href="#models" data-view="models">模型目录 <span>02</span></a><a href="#playground" data-view="playground">调用测试 <span>03</span></a></nav>
+    <div class="sidebar-note"><span class="dot"></span> 官方模型模式<p>关闭窗口后驻留托盘<br>退出程序时停止服务</p><small id="app-version"></small></div>
+  </aside>
+  <main>
+    <header><div class="breadcrumb">MinKing AI <span>/</span> 本地模型</div><div class="service-actions"><span class="pill"><span id="service-dot" class="dot"></span><span id="service-status">正在初始化</span></span><button id="service-control" class="secondary" disabled>启动服务</button></div></header>
+    <section class="intro"><div><p class="eyebrow">LOCAL MODELS · OPEN API</p><h1>你的官方账号，一个本地接口。</h1><p class="muted">在这里管理账号与模型，让其他客户端通过 API Key 和本地地址调用。</p></div><button id="scan" class="primary" disabled>一键同步</button></section>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <section id="connection" class="connect panel">
+      <div><p class="eyebrow">HTTP SERVICE</p><h2>连接到这台电脑</h2><p class="muted">复制地址和密钥，填入其他客户端的自定义供应商设置。</p><form id="port-form" class="port-form"><label>监听端口<input id="port" type="number" min="1024" max="65535" value="18787" required></label><button class="secondary" type="submit">应用端口</button></form><div class="mode"><span class="dot"></span> 仅本机访问 · <span id="network-mode">检测网络</span></div></div>
+      <div class="connection-fields"><label>Base URL<div class="copy-field"><input id="base-url" readonly aria-label="Base URL"><button id="copy-url">复制</button></div></label><label>本地 API Key<div class="copy-field"><input id="api-key" type="password" readonly aria-label="本地 API Key"><button id="show-key">显示</button><button id="copy-key">复制</button></div></label><p class="small muted">Windows 下密钥加密保存在本机，重启后可继续使用。</p></div>
+    </section>
+    <section id="connection-help" class="setup-steps"><div><span>01</span><h3>同步官方账号</h3><p>一键发现并验证本机登录，自动同步模型目录。</p></div><div><span>02</span><h3>复制地址和密钥</h3><p>填入调用方的自定义供应商配置。</p></div><div><span>03</span><h3>选择模型开始调用</h3><p>模型目录中的 ID 可直接用于 API 请求。</p></div></section>
+    <section id="accounts" hidden><div class="section-head"><div><p class="eyebrow">OFFICIAL ACCOUNTS</p><h2>本机官方账号</h2></div><span id="account-count" class="muted small">等待同步</span></div><div id="account-grid" class="account-grid"></div><p class="small muted">一键同步会读取并验证本机官方登录、更新模型目录，不修改登录文件，也不发送生成请求。</p></section>
+    <section id="models" class="panel" hidden><div class="section-head"><div><p class="eyebrow">MODEL DIRECTORY</p><h2>官方模型目录</h2></div><label class="search"><span class="sr-only">筛选模型</span><input id="search" placeholder="搜索模型或平台…"></label></div><div class="table-wrap"><table><thead><tr><th>模型 ID</th><th>来源平台</th><th>信息来源</th><th>验证状态</th><th>操作</th></tr></thead><tbody id="model-rows"></tbody></table></div><div id="model-empty" class="empty">当前分类暂无模型。点击「一键同步」发现并验证账号。<br><span>尚未验证的配置和适配器候选会明确标注。</span></div></section>
+    <div id="call-view" class="lower-grid" hidden>
+      <section id="playground" class="panel"><p class="eyebrow">TRY YOUR MODELS</p><h2>调用测试</h2><form id="test-form"><div class="call-tabs" role="group" aria-label="调用类型"><button class="active" type="button" data-mode="text">文本对话</button><button type="button" data-mode="image">图片生成</button><button type="button" data-mode="video">视频生成</button></div><label>选择官方模型<input id="test-model" list="model-options" placeholder="从模型目录选择，或输入官方模型 ID" required><datalist id="model-options"></datalist></label><label id="prompt-label">消息内容<textarea id="prompt" rows="4" placeholder="例如：用一句话介绍你自己。" required></textarea></label><details class="advanced"><summary>高级接口选项</summary><label>请求协议<select id="endpoint"><option value="responses">Responses（推荐）</option><option value="chat/completions">Chat Completions</option><option value="messages">Anthropic Messages</option><option value="images/generations">Images</option><option value="videos">Videos</option></select></label></details><div class="form-footer"><span class="small muted">使用官方账号额度 · 内容不保存</span><button id="send" class="primary" type="submit" disabled>发送请求 ↗</button></div></form><div class="result-head"><span id="result-meta">等待调用</span><button id="copy-result" class="probe" disabled>复制结果</button></div><div id="result" class="result" aria-live="polite">选择一个官方模型，发送第一条消息。</div><details class="advanced"><summary>查看原始 JSON</summary><pre id="raw-result" class="result"></pre></details></section>
+      <section class="panel"><p class="eyebrow">CLIENT SETUP</p><h2>接入其他 Codex</h2><p class="muted small">将下面的供应商配置合并到调用方的 config.toml，环境变量 MINKING_LOCAL_API_KEY 填入上方密钥。</p><pre id="snippet" class="snippet"></pre><button id="copy-config" class="secondary">复制 Codex 配置</button><hr><form id="settings-form"><label>默认模型<input id="default-model" list="model-options" placeholder="可选；未传 model 时使用"></label><div class="form-footer"><span class="small muted">卡片开关决定哪些平台可供调用。</span><button type="submit" class="secondary">保存本地配置</button></div></form><p class="small muted">图片与视频支持取决于官方账号及接口；未接入的能力会明确返回错误。视频创建后使用 GET /v1/videos/任务ID 查询。</p></section>
+    </div>
+    <footer>MinKing Local <span>官方凭据不上传 · 本地请求不落盘 · 无自动跨平台切换</span></footer>
+  </main>
+</body>
+</html>

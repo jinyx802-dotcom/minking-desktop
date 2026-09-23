@@ -1,0 +1,43 @@
+# Local secrets and runtime. Never upload.
+.env
+.env.*
+!.env.example
+*.pem
+data/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Packaging and scratch output
+build/
+build-*/
+dist/
+dist-*/
+output/
+
+# Old tree snapshots
+_prod_live/
+_prod_merge/
+
+# Local tool indexes and generated media
+.codegraph/
+.playwright-mcp/
+/generated_woman.png
+/minking-video-*.mp4
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="app-root-path" content="{{ root_path }}">
+  <meta name="description" content="MinKing AI：一条密钥接入 Codex、Grok、Claude Code、WorkBuddy、ZCode 与 Antigravity。云端按量计费，官方登录留在本机。">
+  <title>MinKing AI · 官方客户端</title>
+  <link rel="icon" href="{{ root_path }}/static/favicon.ico?v={{ version }}">
+  <link rel="apple-touch-icon" href="{{ root_path }}/static/apple-touch-icon.png?v={{ version }}">
+  <link rel="stylesheet" href="{{ root_path }}/static/site.css?v={{ version }}">
+  <script src="{{ root_path }}/static/site.js?v={{ version }}" defer></script>
+</head>
+<body
+  data-root="{{ root_path }}"
+  data-focus="{{ focus }}"
+  data-package="{% if package_available %}1{% else %}0{% endif %}"
+  data-sha256="{{ sha256 }}"
+>
+  <a class="skip" href="#main">跳到正文</a>
+  <div class="aurora" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="{{ root_path }}/">
+        <img class="brand-mark" src="{{ root_path }}/static/brand-mark.png?v={{ version }}" alt="">
+        <span>MinKing <em>AI</em></span>
+      </a>
+      <nav class="nav-links" aria-label="页面章节">
+        <a href="#capabilities">能力</a>
+        <a href="#models">模型</a>
+        <a href="#security">安全</a>
+        <a href="#pricing">价格</a>
+        <a href="#download">下载</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn ghost" href="{{ root_path }}/portal">登录工作台</a>
+        {% if package_available %}
+        <a class="btn primary" href="{{ root_path }}/download/MinKingAI.exe">下载</a>
+        {% else %}
+        <a class="btn primary" href="#download">下载</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-media" aria-hidden="true">
+        <video class="hero-video" autoplay muted loop playsinline poster="{{ root_path }}/static/hero-poster.jpg?v={{ version }}">
+          <source src="{{ root_path }}/static/hero.mp4?v={{ version }}" type="video/mp4">
+        </video>
+        <div class="hero-shade"></div>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow"><i></i> MINKING AI / WINDOWS</p>
+        <h1>一条线路，接上你已经在用的模型工具。</h1>
+        <p class="lede">Windows 客户端把 Codex、Grok、Claude Code、WorkBuddy、ZCode 和 Antigravity 接到同一把密钥。云端按量计费。本地模式仍走你自己的官方登录，密钥和登录态留在这台电脑上。</p>
+        <div class="hero-cta">
+          {% if package_available %}
+          <a class="btn primary lg" href="{{ root_path }}/download/MinKingAI.exe">下载 Windows 客户端</a>
+          {% else %}
+          <a class="btn primary lg is-disabled" role="link" aria-disabled="true">安装包尚未发布</a>
+          {% endif %}
+          <a class="btn ghost lg" href="{{ root_path }}/portal">登录工作台</a>
+        </div>
+        <ul class="signals">
+          <li><strong data-count="6">0</strong><span>可一键接入的工具</span></li>
+          <li><strong data-count="1">0</strong><span>一把 MinKing 密钥</span></li>
+          <li><strong data-count="0">0</strong><span>官方登录上传次数</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="marquee" aria-label="支持的模型">
+      <div class="marquee-track">
+        <span>GPT-6 Astra</span><span>GPT-6 Sol</span><span>GPT-6 Luna</span><span>GPT-5.6 Sol</span><span>GPT-5.6 Terra</span><span>GPT-5.6 Luna</span><span>Grok 4.6</span><span>Grok 4.5</span><span>Gemini 3.8 Flash</span><span>Gemini 3.1 Pro</span><span>Claude Opus 4.6</span><span>Claude Sonnet 4.6</span><span>GLM 5.2</span><span>DeepSeek V4 Pro</span><span>Kimi K2.7</span>
+        <span>GPT-6 Astra</span><span>GPT-6 Sol</span><span>GPT-6 Luna</span><span>GPT-5.6 Sol</span><span>GPT-5.6 Terra</span><span>GPT-5.6 Luna</span><span>Grok 4.6</span><span>Grok 4.5</span><span>Gemini 3.8 Flash</span><span>Gemini 3.1 Pro</span><span>Claude Opus 4.6</span><span>Claude Sonnet 4.6</span><span>GLM 5.2</span><span>DeepSeek V4 Pro</span><span>Kimi K2.7</span>
+      </div>
+    </section>
+
+    <section id="capabilities" class="section">
+      <div class="section-head">
+        <p class="eyebrow"><i></i> WHAT IT DOES</p>
+        <h2>不是聊天窗口。它负责把工具接到线上。</h2>
+        <p>客户端登录 MinKing 账号，切换本机配置，并在写入前留下可回退的版本。</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 16h14M16 8l8 8-8 8"/></svg>
+          <h3>一键接入</h3>
+          <p>Codex、Grok、Claude Code、WorkBuddy、ZCode、Antigravity。写入前备份，还原时可以选择版本。</p>
+        </article>
+        <article class="card">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22V10h6l4 4v8zM20 14h4v8h-4"/></svg>
+          <h3>云端与本地官方</h3>
+          <p>云端流量走 MinKing。本地官方模式继续用你已经登录的官方账号，流量不经过工作台。</p>
+        </article>
+        <article class="card">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 22l6-12 5 8 3-5 6 9z"/></svg>
+          <h3>文本、图片、视频</h3>
+          <p>文本走各家对话模型。图片和视频走各自的生成接口，按张或按秒计价。</p>
+        </article>
+        <article class="card">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 10h16v12H8zM12 16h8"/></svg>
+          <h3>美元钱包与卡密</h3>
+          <p>每把密钥一块美元余额。售价按官方价乘以系数。卡密兑换有每日次数上限。</p>
+        </article>
+        <article class="card">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 8h10l4 4v12H9zM19 8v4h4"/></svg>
+          <h3>技能由服务端下发</h3>
+          <p>客户端安装工作台发布的技能包。没有单独去找环境变量的步骤。</p>
+        </article>
+        <article class="card">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 16a8 8 0 0 1 13-6M24 16a8 8 0 0 1-13 6M20 6l2 4h-4M12 26l-2-4h4"/></svg>
+          <h3>会话原地同步</h3>
+          <p>Codex 在官方登录和 API 密钥之间切换时，已有会话留在原处，不整包搬家。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="models" class="section">
+      <div class="section-head">
+        <p class="eyebrow"><i></i> MODEL LINES</p>
+        <h2>同一把密钥，覆盖多条模型线路。</h2>
+        <p>目录以工作台当时的定价为准。未定价的模型不会出现在客户端列表里。</p>
+      </div>
+      <div class="lines">
+        <article><h3>OpenAI / Codex</h3><p>GPT-6 Astra、Sol、Luna，以及 GPT-5.6 Sol、Terra、Luna。</p></article>
+        <article><h3>xAI Grok</h3><p>Grok 4.6 与 Grok 4.5，含图片和视频生成。</p></article>
+        <article><h3>Gemini / Claude</h3><p>Gemini 3.8 Flash、3.7 Flash、3.1 Pro，以及 Claude Opus、Sonnet 档位。</p></article>
+        <article><h3>WorkBuddy</h3><p>GLM 5.2、GLM 5.1、DeepSeek V4、Kimi、MiniMax、混元。</p></article>
+      </div>
+    </section>
+
+    <section class="section steps-section">
+      <div class="section-head">
+        <p class="eyebrow"><i></i> THREE STEPS</p>
+        <h2>下载、登录、接入。</h2>
+      </div>
+      <ol class="steps">
+        <li><span>01</span><h3>下载客户端</h3><p>单个 MinKingAI.exe，双击运行，驻留系统托盘。无需安装，也不用解压。</p></li>
+        <li><span>02</span><h3>邮箱登录</h3><p>用工作台邮箱验证码登录。新人奖励每台电脑只发放一次。</p></li>
+        <li><span>03</span><h3>一键接入</h3><p>选择要切换的工具。官方配置会先备份，随时可以按版本还原。</p></li>
+      </ol>
+    </section>
+
+    <section id="security" class="section">
+      <div class="section-head">
+        <p class="eyebrow"><i></i> ON-DEVICE TRUST</p>
+        <h2>密钥留在设备上。</h2>
+        <p>MinKing 不收集官方客户端的登录态。本地模式走你自己的官方账号。</p>
+      </div>
+      <div class="cards">
+        <article class="card"><h3>API Key 不出本机</h3><p>专属密钥写入本机配置和系统保护存储。网页工作台不展示完整密钥。</p></article>
+        <article class="card"><h3>官方登录不上传</h3><p>Codex、Grok、Claude Code、WorkBuddy、ZCode、Antigravity 的官方 cookies 和 tokens 留在你的设备。</p></article>
+        <article class="card"><h3>可还原的切换</h3><p>每次接入前保留上一版配置。还原时可以选择要回到的那一版。</p></article>
+      </div>
+    </section>
+
+    <section id="pricing" class="section">
+      <div class="section-head">
+        <p class="eyebrow"><i></i> PRICING</p>
+        <h2>按官方价乘以系数，按量结算。</h2>
+        <p>下面的表格在公开价格接口可用时展示。额度、卡密和单次预算在登录工作台后管理。</p>
+      </div>
+      <div class="glass">
+        <table id="pricing-table" class="pricing-table hidden" aria-label="公开价格">
+          <thead><tr><th>模型</th><th>供应商</th><th>售价</th></tr></thead>
+          <tbody id="pricing-body"></tbody>
+        </table>
+        <p id="pricing-fallback" class="fallback">价格以工作台为准。登录后可以查看当前额度和模型售价。</p>
+        <a class="btn ghost" href="{{ root_path }}/portal">打开工作台</a>
+      </div>
+    </section>
+
+    <section id="download" class="section">
+      <div class="glass download-panel">
+        <p class="eyebrow"><i></i> WINDOWS x64</p>
+        <h2>下载 MinKing AI 客户端</h2>
+        <p>单个 <code>MinKingAI.exe</code>，双击即可。无需安装，也不依赖旁边的其它文件。建议核对 SHA256 后再运行。</p>
+        {% if package_available %}
+        <div class="hero-cta">
+          <a class="btn primary lg" href="{{ root_path }}/download/MinKingAI.exe">下载 Windows 客户端</a>
+          {% if sha256 %}
+          <a class="btn ghost" href="{{ root_path }}/download/MinKingAI.exe.sha256">下载 SHA256</a>
+          {% endif %}
+        </div>
+        <dl class="meta" {% if not sha256 %}hidden{% endif %}>
+          <div><dt>SHA256</dt><dd id="sha256-value">{{ sha256 }}</dd></div>
+        </dl>
+        {% else %}
+        <p class="release-note">安装包尚未发布</p>
+        <a class="btn primary lg is-disabled" role="link" aria-disabled="true">下载 Windows 客户端</a>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>MinKing AI © 2026</span>
+    <span>服务版本 v{{ version }}</span>
+    <a class="admin-link" href="{{ admin_path }}">管理后台</a>
+  </footer>
+
+  <div class="dock">
+    {% if package_available %}
+    <a class="btn primary" href="{{ root_path }}/download/MinKingAI.exe">下载 Windows 客户端</a>
+    {% else %}
+    <a class="btn primary is-disabled" role="link" aria-disabled="true">安装包尚未发布</a>
+    {% endif %}
+  </div>
+</body>
+</html>
